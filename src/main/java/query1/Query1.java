@@ -43,9 +43,9 @@ public class Query1 {
 
         //read parquet file
         //todo: scommentare riga sotto
-        //Dataset<Row> parquetFileDF = spark.read().parquet(pathParquet1);
+        Dataset<Row> parquetFileDF = spark.read().parquet(pathParquet1);
 
-        //parquetFileDF.printSchema();
+        parquetFileDF.printSchema();
         /*
         parquetFileDF.show();
         System.out.println("----\n");

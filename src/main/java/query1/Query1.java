@@ -25,6 +25,8 @@ public class Query1 {
 
     private static String pathCsv = "/home/martina/Documents/data/csv/prova_2021_12.csv";
     private static String pathCsv1 ="/home/martina/Documents/data/csv/yellow_tripdata_2021-12.csv";
+    private static String pathCsv2 ="/home/martina/Documents/data/csv/yellow_tripdata_2022-01.csv";
+    private static String pathCsv3 ="/home/martina/Documents/data/csv/yellow_tripdata_2022-02.csv";
 
     public static void main(String[] args) throws IOException {
 
@@ -71,7 +73,16 @@ public class Query1 {
 
          */
 
+        Double resultQ1csv1 = computeResultQ1(pathCsv1, spark);
+        Double resultQ1csv2 = computeResultQ1(pathCsv2, spark);
+        Double resultQ1csv3 = computeResultQ1(pathCsv3, spark);
 
+
+
+        spark.stop();
+    }
+
+    private static Double computeResultQ1(String pathCsv1, SparkSession spark) {
         JavaRDD<String> rdd = spark.read().csv(pathCsv1).toJavaRDD().map(
                 row -> row.mkString(",")
         );
@@ -135,8 +146,11 @@ public class Query1 {
 
         //System.out.println("count valori con nan == " + boh.count());
 
+        /*
         long numeroNaN = boh.filter(x -> Double.isNaN(x)).count();
         System.out.println("numeroNaN == " + numeroNaN);
+
+         */
 
         JavaRDD<Double> rddWithoutNaN = boh
                 .filter(x -> !(Double.isNaN(x)));
@@ -159,8 +173,8 @@ public class Query1 {
         System.out.println("result == " + resultQ1);
         //System.out.println("somma == " + somma + " count == " + count + " res == " + somma/count);
         //System.out.println("result === " + resultQ1);
+        return resultQ1;
 
 
-        spark.stop();
     }
 }

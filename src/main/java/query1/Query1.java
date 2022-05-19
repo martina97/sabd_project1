@@ -11,12 +11,16 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
+import scala.Tuple2;
 import scala.Tuple3;
+import utilities.CsvWriter;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Query1 {
     private static String pathParquet1 = "/home/martina/Documents/data/yellow_tripdata_2021-12.parquet";
@@ -28,7 +32,7 @@ public class Query1 {
     private static String pathCsv2 ="/home/martina/Documents/data/csv/yellow_tripdata_2022-01.csv";
     private static String pathCsv3 ="/home/martina/Documents/data/csv/yellow_tripdata_2022-02.csv";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         SparkSession spark = SparkSession.builder()
                 .master("local")
@@ -76,6 +80,12 @@ public class Query1 {
         Double resultQ1csv1 = computeResultQ1(pathCsv1, spark);
         Double resultQ1csv2 = computeResultQ1(pathCsv2, spark);
         Double resultQ1csv3 = computeResultQ1(pathCsv3, spark);
+
+        List<Tuple2<String,Double>> resultList = new ArrayList<>();
+        resultList.add(new Tuple2<>("2021_12", resultQ1csv1));
+        resultList.add(new Tuple2<>("2022_01", resultQ1csv2));
+        resultList.add(new Tuple2<>("2022_02", resultQ1csv3));
+        CsvWriter.writeQuery1Results(resultList);
 
 
 

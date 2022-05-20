@@ -13,11 +13,13 @@ import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 import scala.Tuple3;
+import scala.Tuple4;
 import utilities.CsvWriter;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +33,8 @@ public class Query1 {
     private static String pathCsv1 ="/home/martina/Documents/data/csv/yellow_tripdata_2021-12.csv";
     private static String pathCsv2 ="/home/martina/Documents/data/csv/yellow_tripdata_2022-01.csv";
     private static String pathCsv3 ="/home/martina/Documents/data/csv/yellow_tripdata_2022-02.csv";
-
+    //private static String finalPath = "/home/martina/Documents/data/outputMerge.csv";
+    private static String finalPath = "/home/martina/Documents/data/csv/output.csv";
     public static void main(String[] args) {
 
         SparkSession spark = SparkSession.builder()
@@ -43,9 +46,9 @@ public class Query1 {
 
         //read parquet file
         //todo: scommentare riga sotto
-        Dataset<Row> parquetFileDF = spark.read().parquet(pathParquet1);
+        //Dataset<Row> parquetFileDF = spark.read().parquet(pathParquet1);
 
-        parquetFileDF.printSchema();
+        //.printSchema();
         /*
         parquetFileDF.show();
         System.out.println("----\n");
@@ -77,9 +80,62 @@ public class Query1 {
 
          */
 
+        JavaRDD<String> rdd = spark.read().csv(finalPath).toJavaRDD().map(
+                row -> row.mkString(",")
+        );
+
+        /*
+        JavaRDD<String> rdd1 = spark.read().csv(pathCsv1).toJavaRDD().map(
+                row -> row.mkString(",")
+        );
+        JavaRDD<String> rdd2 = spark.read().csv(pathCsv2).toJavaRDD().map(
+                row -> row.mkString(",")
+        );
+        JavaRDD<String> rdd3 = spark.read().csv(pathCsv3).toJavaRDD().map(
+                row -> row.mkString(",")
+        );
+
+         */
+       // System.out.println("count finale == "  + rdd.count());
+
+        JavaRDD<Tuple4<OffsetDateTime,Double, Double, Double>> rdd2 = Query1Preprocessing.preprocData(rdd);
+      //  System.out.println("count dopo preproc == "  + rdd2.count());
+
+        // RDD con dati di dicembre 2021
+        JavaRDD<Tuple3<Double,Double,Double>> rddDec = rdd2
+                .filter( line -> line._1().getMonthValue() == 12)
+                .map( line -> new Tuple3<>(line._2(), line._3(), line._4())
+        );
+
+        // RDD con dati di gennaio 2022
+        JavaRDD<Tuple3<Double,Double,Double>> rddJan = rdd2
+                .filter( line -> line._1().getMonthValue() == 1)
+                .map( line -> new Tuple3<>(line._2(), line._3(), line._4())
+                );
+
+        // RDD con dati di febbraio 2022
+        JavaRDD<Tuple3<Double,Double,Double>> rddFeb = rdd2
+                .filter( line -> line._1().getMonthValue() == 2)
+                .map( line -> new Tuple3<>(line._2(), line._3(), line._4())
+                );
+
+        Double resultQ1Dec = computeResultQ1(rddDec);
+        Double resultQ1Jan = computeResultQ1(rddJan);
+        Double resultQ1Feb = computeResultQ1(rddFeb);
+
+        List<Tuple2<String,Double>> resultList = new ArrayList<>();
+        resultList.add(new Tuple2<>("2021_12", resultQ1Dec));
+        resultList.add(new Tuple2<>("2022_01", resultQ1Jan));
+        resultList.add(new Tuple2<>("2022_02", resultQ1Feb));
+        CsvWriter.writeQuery1Results(resultList);
+
+
+        /*
         Double resultQ1csv1 = computeResultQ1(pathCsv1, spark);
         Double resultQ1csv2 = computeResultQ1(pathCsv2, spark);
         Double resultQ1csv3 = computeResultQ1(pathCsv3, spark);
+
+
 
         List<Tuple2<String,Double>> resultList = new ArrayList<>();
         resultList.add(new Tuple2<>("2021_12", resultQ1csv1));
@@ -87,35 +143,17 @@ public class Query1 {
         resultList.add(new Tuple2<>("2022_02", resultQ1csv3));
         CsvWriter.writeQuery1Results(resultList);
 
+         */
+
 
 
         spark.stop();
     }
 
-    private static Double computeResultQ1(String pathCsv1, SparkSession spark) {
-        JavaRDD<String> rdd = spark.read().csv(pathCsv1).toJavaRDD().map(
-                row -> row.mkString(",")
-        );
 
 
-        /*
-        System.out.println("rdd ------ \n");
-        for (String i : rdd.collect()){
-            System.out.println(i);
-        }
+    private static Double computeResultQ1(JavaRDD<Tuple3<Double,Double,Double>> rdd) {
 
-         */
-
-
-        JavaRDD<Tuple3<Double, Double, Double>> rdd2 = Query1Preprocessing.preprocData(rdd);
-
-        /*
-        System.out.println("\n\n rdd2 ------ \n");
-        for (Tuple3<Double, Double, Double> i : rdd2.collect()){
-            System.out.println(i);
-        }
-
-         */
 
         //CONTROLLO SE CI SONO NaN
         /*
@@ -132,7 +170,7 @@ public class Query1 {
         // infatti 0.0 / 0.0 = NaN (basta vedere quanto vale Double.NaN
         //quindi devo levare i NaN successivamente
 
-        JavaRDD<Double> boh = rdd2.map(
+        JavaRDD<Double> boh = rdd.map(
                 x -> x._1() / (x._3() - x._2())
         );
         System.out.println("\n\n -------- \n");
@@ -187,4 +225,5 @@ public class Query1 {
 
 
     }
+
 }

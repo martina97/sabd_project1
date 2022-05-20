@@ -128,19 +128,19 @@ public class Query2Preprocessing {
                 row -> {
                     String[] myFields = row.split(",");
                     //System.out.println("tip == " + myFields[14] + "toll == " + myFields[15] + "tot == " +myFields[17]);
-                    System.out.println("tpep_pickup_datetime == " + myFields[1]);
+                    //System.out.println("tpep_pickup_datetime == " + myFields[1]);
                     //System.out.println(myFields[1].getClass());
                     DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
                     //OffsetDateTime odt = OffsetDateTime.parse( "2012-10-01T09:45:00.000+02:00" );
                     OffsetDateTime odt = OffsetDateTime.parse( myFields[1]);
 
-                    System.out.println("odt == " + odt);
+                    //System.out.println("odt == " + odt);
 
                     //LocalDate ld = LocalDate.parse( myFields[1] , f ) ;
                     //System.out.println("ld == " + ld);
                     OffsetDateTime tpep_pickup_datetime = odt;
-                    System.out.println("tpep_pickup_datetime == " + odt);
-                    System.out.println(tpep_pickup_datetime.getClass());
+                    //System.out.println("tpep_pickup_datetime == " + odt);
+                    //System.out.println(tpep_pickup_datetime.getClass());
                     Double tip_amount = Double.valueOf(myFields[14]);
                     Double payment_type = Double.valueOf(myFields[16]);
                     //if ( !(Double.isNaN(tip)) & !(Double.isNaN(toll)) & !(Double.isNaN(tot))) {

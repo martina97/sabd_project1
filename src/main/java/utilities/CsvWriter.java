@@ -1,5 +1,6 @@
 package utilities;
 
+import org.apache.spark.api.java.JavaPairRDD;
 import scala.Tuple2;
 
 import java.io.File;
@@ -79,4 +80,23 @@ public class CsvWriter {
 
          */
 
+    public static void writeQ2Results(JavaPairRDD<String, Integer> rdd) {
+        try {
+            FileWriter csvWriter = new FileWriter("output/outputQuery2.csv");
+            csvWriter.append("Day and Hour");
+            csvWriter.append(",");
+            csvWriter.append("Distribution of the number of trips");
+            csvWriter.append("\n");
+            for (Tuple2<String, Integer> i : rdd.collect()){
+                csvWriter.append(i._1());
+                csvWriter.append(",");
+                csvWriter.append(String.valueOf(i._2()));
+                csvWriter.append("\n");
+            }
+            csvWriter.flush();
+            csvWriter.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -3,8 +3,6 @@ package utilities;
 import org.apache.spark.api.java.JavaPairRDD;
 import scala.Tuple2;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -12,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class CsvWriter {
 
@@ -80,17 +77,34 @@ public class CsvWriter {
 
          */
 
-    public static void writeQ2Results(JavaPairRDD<String, Integer> rdd) {
+    public static void writeQ2Results(JavaPairRDD<String, Tuple2<Tuple2<Integer, Tuple2<Double, Double>>, Double>> rdd) {
         try {
             FileWriter csvWriter = new FileWriter("output/outputQuery2.csv");
             csvWriter.append("Day and Hour");
             csvWriter.append(",");
             csvWriter.append("Distribution of the number of trips");
+            csvWriter.append(",");
+            csvWriter.append("Average tip");
+            csvWriter.append(",");
+            csvWriter.append("Standard Deviation tip");
+            csvWriter.append(",");
+            csvWriter.append("Most popular payment");
             csvWriter.append("\n");
-            for (Tuple2<String, Integer> i : rdd.collect()){
-                csvWriter.append(i._1());
+            for (Tuple2<String, Tuple2<Tuple2<Integer, Tuple2<Double, Double>>, Double>> i : rdd.collect()){
+                csvWriter.append(i._1());                   //data
                 csvWriter.append(",");
-                csvWriter.append(String.valueOf(i._2()));
+                Tuple2<Tuple2<Integer, Tuple2<Double, Double>>, Double> tuple = i._2();
+                Integer distribution = tuple._1()._1();     //distribution
+                csvWriter.append(String.valueOf(distribution));
+                csvWriter.append(",");
+                Double avgTip = tuple._1._2()._1();         //Average tip
+                csvWriter.append(String.valueOf(avgTip));
+                csvWriter.append(",");
+                Double sdvTip = tuple._1._2()._2();         //SDV tip
+                csvWriter.append(String.valueOf(sdvTip));
+                csvWriter.append(",");
+                Double mostPaym = tuple._2();               //Most popular payment
+                csvWriter.append(String.valueOf(mostPaym));
                 csvWriter.append("\n");
             }
             csvWriter.flush();

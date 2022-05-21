@@ -141,10 +141,10 @@ public class Query2Preprocessing {
                     OffsetDateTime tpep_pickup_datetime = odt;
                     //System.out.println("tpep_pickup_datetime == " + odt);
                     //System.out.println(tpep_pickup_datetime.getClass());
-                    Double tip_amount = Double.valueOf(myFields[14]);
-                    Double payment_type = Double.valueOf(myFields[16]);
+                    Double tip_amount = Double.valueOf(myFields[13]);
+                    Double payment_type = Double.valueOf(myFields[9]);
                     //if ( !(Double.isNaN(tip)) & !(Double.isNaN(toll)) & !(Double.isNaN(tot))) {
-                    return new Tuple3<>(tpep_pickup_datetime, tip_amount, payment_type);
+                    return new Tuple3<>(tpep_pickup_datetime, payment_type,tip_amount);
                     // }
 
                 }

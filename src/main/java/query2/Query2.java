@@ -1,24 +1,14 @@
 package query2;
 
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.catalyst.util.DateTimeUtils;
-import query1.Query1Preprocessing;
+import org.apache.spark.util.StatCounter;
 import scala.Tuple2;
 import scala.Tuple3;
-import scala.Tuple4;
-import utilities.CsvWriter;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-
-import static java.lang.Double.sum;
 
 public class Query2 {
 
@@ -91,21 +81,65 @@ public class Query2 {
         // -------------------- PROVO ALTRO MODO SENZA SUBSTRING  --------
 
         // CALCOLO Distribution of the number of trips distrNumbTripPerH
-        JavaPairRDD<String, Integer> distrNumbTripPerH = CalculateDistribution(rdd2);
+        //todo: SCOMMENTARE
+        // JavaPairRDD<String, Integer> distrNumbTripPerH = CalculateDistribution(rdd2);
+
+
+
+
 
 
         //Calcolo average tip and its standard deviation
-        JavaPairRDD<String, Double> avgAndStDevTip = CalculateAvgStDevTip(rdd2);
+        //todo: scommentare ?
+        //JavaPairRDD<String, Double> avgAndStDevTip = CalculateAvgStDevTip(rdd2);
         //CsvWriter.writeQ2Results(counts2);
 
+        //Calcolo average tip and its standard deviation
+        //todo: SCOMMENTARE
+        // JavaPairRDD<String, Tuple2<Double, Double>> avgAndStDevTip2 = CalculateAvgStDevTip2(rdd2);
 
+
+        // calculate the most popular payment method
+        JavaPairRDD<String, Double> mostPopularePayment = CalculateTopPayment(rdd2);
+
+        //todo: SCOMMENTARE
+        /*
         System.out.println(" ------ outputQ2 -------");
-        JavaPairRDD<String, Tuple2<Integer, Double>> outputQ2 = distrNumbTripPerH.join(avgAndStDevTip).sortByKey();
-        for (Tuple2<String, Tuple2<Integer, Double>> i : outputQ2.collect()){
+        JavaPairRDD<String, Tuple2<Integer, Tuple2<Double, Double>>> outputQ2 = distrNumbTripPerH.join(avgAndStDevTip2).sortByKey();
+        for (Tuple2<String, Tuple2<Integer, Tuple2<Double, Double>>> i : outputQ2.collect()){
             System.out.println(i);
         }
 
+         */
+
         spark.stop();
+    }
+
+    private static JavaPairRDD<String, Tuple2<Double, Double>> CalculateAvgStDevTip2(JavaRDD<Tuple3<OffsetDateTime, Double, Double>> rdd2) {
+        JavaPairRDD<String, Double> rddAvgTip = rdd2.mapToPair(
+                word -> {
+                    OffsetDateTime odt = word._1();
+                    String key = getDateHour(odt);
+                    //Tuple2<Double,Integer> value = new Tuple2<>(word._3(),1);
+
+                    return new Tuple2<>(key, word._3());
+                });
+
+        //JavaRDD<Tuple3<String, Double, Double>> output = rddAvgTip
+        JavaPairRDD<String, Tuple2<Double,Double>> output = rddAvgTip
+                .aggregateByKey(
+                        new StatCounter(),
+                        StatCounter::merge,
+                        StatCounter::merge)
+                .mapToPair(x -> new Tuple2<>(x._1(), new Tuple2<>(x._2().stdev(), x._2().mean())))
+                .sortByKey();
+
+
+        System.out.println(" \n------ output -------");
+        for (Tuple2<String, Tuple2<Double, Double>> i : output.collect()){
+            System.out.println(i);
+        }
+        return output;
     }
 
     private static JavaPairRDD<String, Double> CalculateAvgStDevTip(JavaRDD<Tuple3<OffsetDateTime, Double, Double>> rdd2) {
@@ -181,6 +215,48 @@ public class Query2 {
 
          */
 
+    }
+
+
+
+    private static JavaPairRDD<String, Double> CalculateTopPayment (JavaRDD<Tuple3<OffsetDateTime, Double, Double>> rdd) {
+        JavaPairRDD<String,Double> rddAvgTip = rdd.mapToPair(
+                word -> {
+                    OffsetDateTime odt = word._1();
+                    String key = getDateHour(odt);
+
+                    return new Tuple2<>(key, word._2());
+                });
+        for (Tuple2<String, Double> i : rddAvgTip.collect()){
+            System.out.println(i);
+        }
+
+        JavaPairRDD<String, Double> output = rddAvgTip
+                .aggregateByKey(
+                        new StatCounter(),
+                        StatCounter::merge,
+                        StatCounter::merge)
+                .mapToPair(x -> new Tuple2<>(x._1(),x._2().max()))
+                .sortByKey();
+
+
+        /*
+        //JavaRDD<Tuple3<String, Double, Double>> output = rddAvgTip
+        JavaPairRDD<String, StatCounter> output = rddAvgTip
+                .aggregateByKey(
+                        new StatCounter(),
+                        StatCounter::merge,
+                        StatCounter::merge);
+                //.mapToPair(x -> new Tuple2<>(x._1(), x._2().max()))
+               // .sortByKey();
+
+         */
+
+        System.out.println("\n\n ----- output -----");
+        for (Tuple2<String, Double> i : output.collect()){
+            System.out.println(i);
+        }
+        return output;
     }
 
     private static String getDateHour(OffsetDateTime odt) {

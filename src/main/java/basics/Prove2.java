@@ -45,7 +45,7 @@ public class Prove2 {
                             new StatCounter(),
                             StatCounter::merge,
                             StatCounter::merge)
-                    .map(x -> new Tuple3<String, Double, Double>(x._1(), x._2().stdev(), x._2().mean()));
+                    .map(x -> new Tuple3<>(x._1(), x._2().stdev(), x._2().mean()));
 
 
             System.out.println(" \n------ output -------");

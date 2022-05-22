@@ -1,28 +1,16 @@
 package query1;
 
-import org.apache.hadoop.io.DataOutputBuffer;
-import org.apache.hadoop.shaded.org.eclipse.jetty.websocket.common.frames.DataFrame;
-import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.DataFrameReader;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.Encoders;
-import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.util.StatCounter;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple4;
 import utilities.CsvWriter;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class Query1 {
     private static String pathParquet1 = "/home/martina/Documents/data/yellow_tripdata_2021-12.parquet";
@@ -35,7 +23,7 @@ public class Query1 {
     private static String pathCsv3 ="/home/martina/Documents/data/csv/yellow_tripdata_2022-02.csv";
     //private static String finalPath = "/home/martina/Documents/data/outputMerge.csv";
     private static String finalPath = "/home/martina/Documents/data/csv/output.csv";
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         SparkSession spark = SparkSession.builder()
                 .master("local")
@@ -96,16 +84,22 @@ public class Query1 {
         );
 
          */
-       // System.out.println("count finale == "  + rdd.count());
+
 
         JavaRDD<Tuple4<OffsetDateTime,Double, Double, Double>> rdd2 = Query1Preprocessing.preprocData(rdd);
-      //  System.out.println("count dopo preproc == "  + rdd2.count());
+        //System.out.println("count dopo preproc == "  + rdd2.count());
 
+        JavaPairRDD<String, Double> resultRDD = computeResults(rdd2);
+        CsvWriter.writeQuery1Results(resultRDD);
+
+        //todo: divido in 3 rdd e calcolo separatamente, ma ci mette piu tempo!
+        /*
         // RDD con dati di dicembre 2021
         JavaRDD<Tuple3<Double,Double,Double>> rddDec = rdd2
                 .filter( line -> line._1().getMonthValue() == 12)
                 .map( line -> new Tuple3<>(line._2(), line._3(), line._4())
         );
+
 
         // RDD con dati di gennaio 2022
         JavaRDD<Tuple3<Double,Double,Double>> rddJan = rdd2
@@ -127,20 +121,6 @@ public class Query1 {
         resultList.add(new Tuple2<>("2021_12", resultQ1Dec));
         resultList.add(new Tuple2<>("2022_01", resultQ1Jan));
         resultList.add(new Tuple2<>("2022_02", resultQ1Feb));
-        CsvWriter.writeQuery1Results(resultList);
-
-
-        /*
-        Double resultQ1csv1 = computeResultQ1(pathCsv1, spark);
-        Double resultQ1csv2 = computeResultQ1(pathCsv2, spark);
-        Double resultQ1csv3 = computeResultQ1(pathCsv3, spark);
-
-
-
-        List<Tuple2<String,Double>> resultList = new ArrayList<>();
-        resultList.add(new Tuple2<>("2021_12", resultQ1csv1));
-        resultList.add(new Tuple2<>("2022_01", resultQ1csv2));
-        resultList.add(new Tuple2<>("2022_02", resultQ1csv3));
         CsvWriter.writeQuery1Results(resultList);
 
          */
@@ -224,6 +204,32 @@ public class Query1 {
         return resultQ1;
 
 
+    }
+
+    // PIU EFFICIENTE, CI METTE MENO
+    // todo: vedere differenza di tempo tra questo metodo e l'altro
+    private static JavaPairRDD<String, Double> computeResults(JavaRDD<Tuple4<OffsetDateTime,Double, Double, Double>> rdd) {
+        // voglio pair RDD con key = 2021-12, value = tip/(total amount - toll amount)
+
+        JavaPairRDD<String, Double> rddAvgTip = rdd.mapToPair(
+                word -> {
+                    OffsetDateTime odt = word._1();
+                    String key = odt.getYear() + "-" + odt.getMonthValue();
+                    Double value = word._2() / (word._4()- word._3());
+                    //Tuple2<Double,Integer> value = new Tuple2<>(word._3(),1);
+
+                    return new Tuple2<>(key, value);
+                });
+        JavaPairRDD<String, Double> output = rddAvgTip
+                .filter(x-> !(Double.isNaN(x._2()))) //rimuovo NaN generati da tip/(total amount - toll amount) (infatti 0.0/0.0 = NaN)
+                .aggregateByKey(
+                        new StatCounter(),
+                        StatCounter::merge,
+                        StatCounter::merge)
+                .mapToPair(x -> new Tuple2<>(x._1(),  x._2().mean()))
+                .sortByKey();
+
+        return output;
     }
 
 }

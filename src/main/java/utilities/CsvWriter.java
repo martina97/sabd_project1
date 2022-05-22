@@ -14,7 +14,7 @@ import java.util.List;
 public class CsvWriter {
 
 
-    public static void writeQuery1Results(List<Tuple2<String,Double>> resultList) {
+    public static void writeQuery1Results2(List<Tuple2<String,Double>> resultList) {
         try {
             FileWriter csvWriter = new FileWriter("output/outputQuery1.csv");
             csvWriter.append("Month");
@@ -27,6 +27,27 @@ public class CsvWriter {
                 csvWriter.append(",");
                 csvWriter.append(Double.toString(tuple._2));
                 csvWriter.append("\n");
+            }
+            csvWriter.flush();
+            csvWriter.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public static void writeQuery1Results(JavaPairRDD<String, Double> resultsRDD) {
+        try {
+            FileWriter csvWriter = new FileWriter("output/outputQuery1.csv");
+            csvWriter.append("Month");
+            csvWriter.append(",");
+            csvWriter.append("avg tip/(total amount - toll amount)");
+            csvWriter.append("\n");
+
+            for (Tuple2<String, Double> tuple : resultsRDD.collect()) {
+                csvWriter.append(tuple._1());
+                csvWriter.append(",");
+                csvWriter.append(Double.toString(tuple._2()));
+                csvWriter.append("\n");
+
             }
             csvWriter.flush();
             csvWriter.close();

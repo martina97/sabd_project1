@@ -26,6 +26,9 @@ public class Query2 {
 
         spark.sparkContext().setLogLevel("ERROR");
 
+        //todo: per la query 2 potrei usare l'rdd iniziale della query 1, quindi dovrei fare rdd.cache()
+        // no! perche le colonne sono diverse
+
         //todo: preproc in cui ordino csv in base a prima colonna per data crescente e genero path
 
         JavaRDD<String> rdd = spark.read().csv(finalPath).toJavaRDD().map(

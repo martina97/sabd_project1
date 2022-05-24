@@ -23,6 +23,7 @@ public class Query1 {
     private static String pathCsv3 ="/home/martina/Documents/data/csv/yellow_tripdata_2022-02.csv";
     //private static String finalPath = "/home/martina/Documents/data/outputMerge.csv";
     private static String finalPath = "/home/martina/Documents/data/csv/output.csv";
+    //private static String finalPath = "prova_2021_12.csv";
     public static void main(String[] args) throws IOException {
 
         SparkSession spark = SparkSession.builder()

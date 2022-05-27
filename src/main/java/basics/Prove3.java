@@ -4,39 +4,13 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.StatCounter;
-import query1.Query1Preprocessing;
+import utilities.Query1Preprocessing;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple4;
-import utilities.CsvWriter;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.hadoop.io.DataOutputBuffer;
-import org.apache.hadoop.shaded.org.eclipse.jetty.websocket.common.frames.DataFrame;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.DataFrameReader;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.Encoders;
-import org.apache.spark.sql.SaveMode;
-import org.apache.spark.sql.SparkSession;
-import scala.Tuple2;
-import scala.Tuple3;
-import scala.Tuple4;
-import utilities.CsvWriter;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 
 public class Prove3 {

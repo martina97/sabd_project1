@@ -5,25 +5,21 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-import org.codehaus.janino.CodeContext;
 import scala.Tuple4;
+import utilities.Query1Preprocessing;
 
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class Query1SQL {
-    //private static String finalPath = "prova_2021_12.csv";
-    private static String finalPath = "/home/martina/Documents/data/csv/output.csv";
+    private static String finalPath = "prova_2021_12.csv";
+    //private static String finalPath = "/home/martina/Documents/data/csv/output.csv";
 
 
     public static void main (String[] args) {
@@ -88,7 +84,7 @@ public class Query1SQL {
         // Apply the schema to the RDD
         // tramite la definizione dei fields dico a spark di creare un dataframe partendo
         // dal java rdd rowRDD
-        // questo dataset è interrogabile tramite queries SQL
+        // questo dataset è interrogabile tramite queries SQL.
         Dataset<Row> df = spark.createDataFrame(rowRDD, schema);
 
         /*

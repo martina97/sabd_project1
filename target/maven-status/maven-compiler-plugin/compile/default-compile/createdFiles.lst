@@ -1,2 +1,12 @@
-Query1.class
+utilities/Query1Preprocessing.class
+queries/Query2.class
+utilities/Query2Preprocessing.class
+basics/Prove2.class
+queries/Query1.class
+utilities/QueriesPreprocessing.class
 basics/SquareEvenNumbers.class
+queries/StartQueries.class
+query1/Query1SQL.class
+basics/Prove.class
+utilities/CsvWriter.class
+basics/Prove3.class

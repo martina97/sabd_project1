@@ -1,6 +1,9 @@
 package utilities;
 
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 
 import java.io.FileWriter;
@@ -13,6 +16,48 @@ import java.util.List;
 
 public class CsvWriter {
 
+   public static void main(String[] args) throws IOException {
+    //public static void CSVMain() {
+        SparkSession spark = SparkSession.builder()
+                .master("local")
+                .appName("Query 1")
+                .getOrCreate();
+
+        spark.sparkContext().setLogLevel("ERROR");
+
+        String pathParquet1 = "hdfs://hdfs-namenode:9000/data/yellow_tripdata_2021-12.parquet";
+        //String pathParquet2 = "hdfs://hdfs-namenode:9000/data/yellow_tripdata_2022-01.parquet";
+        //String pathParquet3 = "hdfs://hdfs-namenode:9000/data/yellow_tripdata_2022-02.parquet";
+
+        List<String> pathList = new ArrayList<>();
+        pathList.add(pathParquet1);
+        //pathList.add(pathParquet2);
+        //pathList.add(pathParquet3);
+
+        /*
+        for (String path : pathList) {
+            convertParquetToCSV(path, spark);
+        }
+
+        mergeCsv();
+
+         */
+
+    }
+
+
+        public static void convertParquetToCSV(String path, SparkSession spark) {
+
+        Dataset<Row> parquetFileDF = spark.read().parquet(path);
+
+        //.printSchema();
+
+        //convert to csv
+        String outputFile = path.replace("parquet", "csv");
+        parquetFileDF.write().option("header","true").csv(outputFile);
+
+        //todo: mettere file su  hdfs
+    }
 
     public static void writeQuery1Results2(List<Tuple2<String,Double>> resultList) {
         try {
@@ -56,8 +101,10 @@ public class CsvWriter {
         }
     }
 
-    //public static void mergeCsv(List<String> pathList) throws IOException {
-    public static void main(String[] args) throws IOException {
+    //merge file csv presi da HDFS
+    public static void mergeCsv() throws IOException {
+    //public static void main(String[] args) throws IOException {
+        // todo: mettere path di HDFS
         String pathCsv1 ="/home/martina/Documents/data/csv/yellow_tripdata_2021-12.csv";
         String pathCsv2 ="/home/martina/Documents/data/csv/yellow_tripdata_2022-01.csv";
         String pathCsv3 ="/home/martina/Documents/data/csv/yellow_tripdata_2022-02.csv";

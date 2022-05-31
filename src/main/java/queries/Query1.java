@@ -34,8 +34,8 @@ public class Query1 {
         //System.out.println("rddPreproc count === " + rddPreproc.count());
 
         JavaPairRDD<String, Double> resultRDD = computeResults(rddPreproc);
-        CsvWriter.writeQuery1Results(resultRDD);
-        //CsvWriter.writeQuery1(resultRDD);
+        //CsvWriter.writeQuery1Results(resultRDD);
+        CsvWriter.writeQuery1(resultRDD);
 
 
 

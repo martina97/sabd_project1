@@ -106,7 +106,6 @@ public class convertProva {
             System.out.println(s);
             Iterator<Tuple2<String, Integer>> iterator = s._2().iterator();
 
-
             while (iterator.hasNext())  {
                 Tuple2<String, Integer> currTuple = iterator.next();
                 Integer currOccurrence = currTuple._2();
@@ -145,6 +144,23 @@ public class convertProva {
         Integer maxOccurrence = 0;
         while (iterator.hasNext())  {
             Tuple2<String, Integer> currTuple = iterator.next();
+            Integer currOccurrence = currTuple._2();
+            //System.out.println("numOcc == " + currOccurrence);
+            if (currOccurrence >= maxOccurrence) {
+                maxOccurrence = currOccurrence;
+                maxTuple = currTuple;
+            }
+        }
+
+        return maxTuple;
+    }
+    public static Tuple2<Double, Integer> getMaxOccurence2(Iterable<Tuple2<Double, Integer>> iterable) {
+        Iterator<Tuple2<Double, Integer>> iterator = iterable.iterator();
+
+        Tuple2<Double, Integer> maxTuple = null;
+        Integer maxOccurrence = 0;
+        while (iterator.hasNext())  {
+            Tuple2<Double, Integer> currTuple = iterator.next();
             Integer currOccurrence = currTuple._2();
             //System.out.println("numOcc == " + currOccurrence);
             if (currOccurrence >= maxOccurrence) {

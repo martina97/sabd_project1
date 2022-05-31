@@ -29,7 +29,7 @@ public class StartQueries {
         );
          */
 
-        //Query1.query1Main(rdd);
+        Query1.query1Main(rdd);
 
         Query2.query2Main(rdd);
         spark.stop();

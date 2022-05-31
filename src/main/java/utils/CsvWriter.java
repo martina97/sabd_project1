@@ -193,53 +193,86 @@ public class CsvWriter {
         //todo: mettere file su  hdfs
     }
 
-    public static void writeQuery2 (List<Tuple2<Tuple2<String, String>, Iterable<Tuple2<Integer, String>>>> list) {
-
-        //importo files di output su hdfs
-        Configuration configuration = new Configuration();
-        configuration.set("fs.defaultFS","hdfs://hdfs-namenode:9000");
-        FileSystem hdfs = null;
+    public static void writeQuery2(JavaPairRDD<Integer, Tuple2<Tuple2<Integer, Tuple2<Double, Double>>, Tuple2<Double, Integer>>> resultQ2 ) {
         try {
+
+            // scrittura su hdfs
+            Configuration configuration = new Configuration();
+            configuration.set("fs.defaultFS","hdfs://hdfs-namenode:9000");
+            FileSystem hdfs = null;
             hdfs = FileSystem.get(configuration);
-            Path hdfsWritePath = new Path("hdfs://hdfs-namenode:9000"+ pathQuery2Results);
+            Path outputPathHDFS = new Path("hdfs://hdfs-namenode:9000/"+ pathQuery2Results);
             FSDataOutputStream fsDataOutputStream = null;
-            fsDataOutputStream = hdfs.create(hdfsWritePath,true);
+            fsDataOutputStream = hdfs.create(outputPathHDFS,true);
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fsDataOutputStream, StandardCharsets.UTF_8));
-
             StringBuilder sb = new StringBuilder();
-            sb.append("Data, Fascia Anagrafica");
-            sb.append(';');
+            sb.append("Hour");
+            sb.append(",");
+            sb.append("Distribution of the number of trips");
+            sb.append(",");
+            sb.append("Average tip");
+            sb.append(",");
+            sb.append("Standard deviation tip");
+            sb.append(",");
+            sb.append("Most popular payment method");
+            sb.append(",");
+            sb.append("Most popular payment method occurences");
+            sb.append("\n");
 
-            sb.append("TOP 5 (Numero vaccinazioni previste, Regione)");
-            sb.append('\n');
 
+            // scrittura su csv locale
+            FileWriter csvWriter = new FileWriter(pathQuery2Results);
 
+            csvWriter.append("Hour");
+            csvWriter.append(",");
+            csvWriter.append("Distribution of the number of trips");
+            csvWriter.append(",");
+            csvWriter.append("Average tip");
+            csvWriter.append(",");
+            csvWriter.append("Standard deviation tip");
+            csvWriter.append(",");
+            csvWriter.append("Most popular payment method");
+            csvWriter.append(",");
+            csvWriter.append("Most popular payment method occurences");
+            csvWriter.append("\n");
 
+            for (Tuple2<Integer, Tuple2<Tuple2<Integer, Tuple2<Double, Double>>, Tuple2<Double, Integer>>> tuple : resultQ2.collect()) {
 
-            for (Tuple2<Tuple2<String, String>, Iterable<Tuple2<Integer, String>>> elem : list){
-                Iterable<Tuple2<Integer, String>> value = elem._2;
-                sb.append(elem._1());
-                sb.append(';');
-                int i = 0;
-                sb.append("[");
-                //top5
-                for (Tuple2<Integer, String> integerStringTuple2 : value) {
-                    if(i==5)
-                        break;
-                    sb.append(integerStringTuple2+",");
-                    i++;
-                }
-                sb.append("]");
-                sb.append('\n');
+                csvWriter.append(String.valueOf(tuple._1()));
+                csvWriter.append(",");
+                csvWriter.append(String.valueOf(tuple._2()._1()._1()));
+                csvWriter.append(",");
+                csvWriter.append(String.valueOf(tuple._2()._1._2()._1()));
+                csvWriter.append(",");
+                csvWriter.append(String.valueOf(tuple._2()._1._2()._2()));
+                csvWriter.append(",");
+                csvWriter.append(String.valueOf(tuple._2()._2()._1()));
+                csvWriter.append(",");
+                csvWriter.append(String.valueOf(tuple._2()._2()._2()));
+                csvWriter.append("\n");
+
+                // hdfs
+                sb.append(tuple._1());
+                sb.append(",");
+                sb.append(tuple._2()._1()._1());
+                sb.append(",");
+                sb.append(tuple._2()._1._2()._1());
+                sb.append(",");
+                sb.append(tuple._2()._1._2()._2());
+                sb.append(",");
+                sb.append(tuple._2()._2()._1());
+                sb.append(",");
+                sb.append(tuple._2()._2()._2());
+                sb.append("\n");
             }
-
             bufferedWriter.write(sb.toString());
             bufferedWriter.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            csvWriter.flush();
+            csvWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     public static void writeQuery1(JavaPairRDD<String, Double> resultsRDD) {

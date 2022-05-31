@@ -39,13 +39,17 @@ public class QueriesPreprocessing {
 
         //Dataset<Row> df2 = spark.sqlContext().parquetFile(parquetFile2);
         Dataset<Row> df2 = spark.read().parquet(parquetFile2);
+
         JavaRDD<String> rdd2 = df2.toJavaRDD().map(row -> row.mkString(","));
+
         //System.out.println("count df2 == " + df2.count() + " count rdd2 == " + rdd2.count() + " count df2.rdd() == " + df2.rdd().count());
 
         //Dataset<Row> df3 = spark.sqlContext().parquetFile(parquetFile3);
         Dataset<Row> df3 = spark.read().parquet(parquetFile3);
+
         JavaRDD<String> rdd3 = df3.toJavaRDD().map(row -> row.mkString(","));
-       // System.out.println("count df3 == " + df3.count() + " count rdd3 == " + rdd3.count() + " count df3.rdd() == " + df3.rdd().count());
+
+        // System.out.println("count df3 == " + df3.count() + " count rdd3 == " + rdd3.count() + " count df3.rdd() == " + df3.rdd().count());
 
 
         /*
@@ -69,7 +73,7 @@ public class QueriesPreprocessing {
 
 
     public static JavaRDD<String> importParquet2(SparkSession spark) {
-        Dataset<Row> df = spark.read().parquet(parquetFile3);
+        Dataset<Row> df = spark.read().parquet(parquetFile1);
         JavaRDD<String> rdd1 = df.toJavaRDD().map(row -> row.mkString(","));
 
         return rdd1;
@@ -106,9 +110,11 @@ public class QueriesPreprocessing {
 
     public static  JavaRDD<Tuple3<LocalDateTime, Double, Double>> Query2Preprocessing(JavaRDD<String> dataset) {
         // remove header
-        String header = dataset.first();
+        // todo: con i file parquet non si copia l'header, quindi non devo toglierlo !!
+       // String header = dataset.first();
         //System.out.println("header == " + header);
-        return dataset.filter(x -> !(x.contains(header) & !(x.contains("NaN")))).map(
+        //return dataset.filter(x -> !(x.contains(header) & !(x.contains("NaN")))).map(
+        return dataset.filter(x -> !(x.contains("NaN"))).map(
                         row -> {
                             String[] myFields = row.split(",");
                             //System.out.println("tip == " + myFields[14] + "toll == " + myFields[15] + "tot == " +myFields[17]);

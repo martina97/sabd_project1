@@ -2,24 +2,14 @@ package queries;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.StatCounter;
 import scala.Tuple2;
-import scala.Tuple3;
 import scala.Tuple4;
 import utils.CsvWriter;
 import utils.QueriesPreprocessing;
 
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.Calendar;
-import java.util.Date;
 
 public class Query1 {
 
@@ -34,12 +24,8 @@ public class Query1 {
         //System.out.println("rddPreproc count === " + rddPreproc.count());
 
         JavaPairRDD<String, Double> resultRDD = computeResults(rddPreproc);
-        //CsvWriter.writeQuery1Results(resultRDD);
-        CsvWriter.writeQuery1(resultRDD);
-
-
-
-
+        CsvWriter.writeQuery1ResultsCSV(resultRDD);
+        //CsvWriter.writeQuery1HDFS_CSV(resultRDD);
 
     }
 

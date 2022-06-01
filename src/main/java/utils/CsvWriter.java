@@ -13,7 +13,6 @@ import scala.Tuple2;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 public class CsvWriter {
 
@@ -275,7 +274,7 @@ public class CsvWriter {
 
     }
 
-    public static void writeQuery1(JavaPairRDD<String, Double> resultsRDD) {
+    public static void writeQuery1HDFS_CSV(JavaPairRDD<String, Double> resultsRDD) {
 
         try {
             // scrittura su hdfs
@@ -325,7 +324,7 @@ public class CsvWriter {
         }
     }
 
-    public static void writeQuery1Results(JavaPairRDD<String, Double> resultsRDD) {
+    public static void writeQuery1ResultsCSV(JavaPairRDD<String, Double> resultsRDD) {
         try {
             FileWriter csvWriter = new FileWriter(pathQuery1Results);
             csvWriter.append("Month");

@@ -75,7 +75,6 @@ public class QueriesPreprocessing {
     public static JavaRDD<String> importParquet2(SparkSession spark) {
         Dataset<Row> df = spark.read().parquet(parquetFile1);
         JavaRDD<String> rdd1 = df.toJavaRDD().map(row -> row.mkString(","));
-
         return rdd1;
 
     }

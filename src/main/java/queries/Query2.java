@@ -19,33 +19,47 @@ public class Query2 {
 
     public static void query2Main(JavaRDD<String> rdd) {
         //public static void main(String[] args) {
-       JavaRDD<Tuple3<LocalDateTime, Double, Double>> rdd2 = QueriesPreprocessing.Query2Preprocessing(rdd).cache();
+        JavaRDD<Tuple3<LocalDateTime, Double, Double>> rdd2 = QueriesPreprocessing.Query2Preprocessing(rdd).cache();
         //JavaRDD<Tuple3<OffsetDateTime, Double, Double>> rdd2 = QueriesPreprocessing.preprocData(rdd);
-        System.out.println("dopo preproc == " + rdd2.count());
+        //System.out.println("dopo preproc == " + rdd2.count());
 
 
         // --------  Calcolo Distribution of the number of trips distrNumbTripPerH  --------
-        JavaPairRDD<Integer, Integer> distrNumbTripPerH = CalculateDistribution(rdd2).sortByKey();
         /*
+        JavaPairRDD<Integer, Integer> distrNumbTripPerH = CalculateDistribution(rdd2).sortByKey();
+        System.out.println( "------- distrNumbTripPerH ------- ");
         for (Tuple2<Integer, Integer> s : distrNumbTripPerH.collect()) {
             System.out.println(s);
         }
-        */
 
-
-        //--------   Calcolo average tip and its standard deviation --------
-        JavaPairRDD<Integer, Tuple2<Double, Double>> avgAndStDevTip2 = CalculateAvgStDevTip2(rdd2);
-        /*
-        for (Tuple2<Integer, Tuple2<Double, Double>> s : avgAndStDevTip2.collect()) {
-            System.out.println(s);
-        }
          */
 
 
-        // -------- Calcolo the most popular payment method --------
-        JavaPairRDD<Integer, Tuple2<Double, Integer>> mostPopularPayment = CalculateTopPayment2(rdd2);
-        //CalculateTopPayment2(rdd2);
 
+        //--------   Calcolo average tip and its standard deviation --------
+        /*
+       JavaPairRDD<Integer, Tuple2<Double, Double>> avgAndStDevTip2 = CalculateAvgStDevTip2(rdd2);
+        System.out.println( "------- avgAndStDevTip ------- ");
+
+
+
+        for (Tuple2<Integer, Tuple2<Double, Double>> s : avgAndStDevTip2.collect()) {
+            System.out.println(s);
+        }
+
+         */
+
+
+
+        // -------- Calcolo the most popular payment method --------
+       JavaPairRDD<Integer, Tuple2<Double, Integer>> mostPopularPayment = CalculateTopPayment2(rdd2);
+        System.out.println( "------- mostPopularPayment ------- ");
+
+        for (Tuple2<Integer, Tuple2<Double, Integer>> s : mostPopularPayment.sortByKey().collect()) {
+            System.out.println(s);
+        }
+
+        /*
         JavaPairRDD<Integer, Tuple2<Tuple2<Integer, Tuple2<Double, Double>>, Tuple2<Double, Integer>>> resultQ2 = distrNumbTripPerH
                 .join(avgAndStDevTip2)
                 .join(mostPopularPayment)
@@ -57,6 +71,8 @@ public class Query2 {
         }
 
         CsvWriter.writeQuery2(resultQ2);
+
+         */
     }
 
     private static JavaPairRDD<Integer, Double> CalculateTopPayment (JavaRDD<Tuple3<LocalDateTime, Double, Double>> rdd) {

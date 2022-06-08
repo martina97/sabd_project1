@@ -11,12 +11,9 @@ import utils.QueriesPreprocessing;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeMap;
 
 import static utils.convertProva.getMaxOccurence2;
 
@@ -33,7 +30,7 @@ public class Query2 {
         // --------  Calcolo Distribution of the number of trips distrNumbTripPerH  --------
         //JavaPairRDD<Integer, Integer> distrNumbTripPerH = CalculateDistribution(rdd2).sortByKey();
 
-        CalculateDistribution4(rdd2);
+       // CalculateDistribution4(rdd2);
         //todo: ordino la lista dei valori quando scrivo il csv !!!!!
         /*
         System.out.println( "------- distrNumbTripPerH ------- ");
@@ -50,30 +47,30 @@ public class Query2 {
 
 
         //--------   Calcolo average tip and its standard deviation --------
-        /*
-       JavaPairRDD<Integer, Tuple2<Double, Double>> avgAndStDevTip2 = CalculateAvgStDevTip2(rdd2);
+
+       JavaPairRDD<String, Tuple2<Double, Double>> avgAndStDevTip2 = CalculateAvgStDevTip2(rdd2);
         System.out.println( "------- avgAndStDevTip ------- ");
 
 
 
-        for (Tuple2<Integer, Tuple2<Double, Double>> s : avgAndStDevTip2.collect()) {
+        for (Tuple2<String, Tuple2<Double, Double>> s : avgAndStDevTip2.collect()) {
             System.out.println(s);
         }
 
-         */
+
 
 
 
         // -------- Calcolo the most popular payment method --------
-        /*
-       JavaPairRDD<Integer, Tuple2<Double, Integer>> mostPopularPayment = CalculateTopPayment2(rdd2);
+
+       JavaPairRDD<String, Tuple2<Double, Integer>> mostPopularPayment = CalculateTopPayment3(rdd2);
         System.out.println( "------- mostPopularPayment ------- ");
 
-        for (Tuple2<Integer, Tuple2<Double, Integer>> s : mostPopularPayment.sortByKey().collect()) {
+        for (Tuple2<String, Tuple2<Double, Integer>> s : mostPopularPayment.sortByKey().collect()) {
             System.out.println(s);
         }
 
-         */
+
 
         /*
         JavaPairRDD<Integer, Tuple2<Tuple2<Integer, Tuple2<Double, Double>>, Tuple2<Double, Integer>>> resultQ2 = distrNumbTripPerH
@@ -395,7 +392,81 @@ public class Query2 {
         return finale;
 
     }
+    private static JavaPairRDD<String, Tuple2<Double, Integer>> CalculateTopPayment3(JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rdd) {
+        System.out.println(" --------------- CalculateTopPayment ----------------");
 
+        // ((ora,pagamento),1) --> ((1,1.0),1)
+        JavaPairRDD<Tuple2<String, Double>, Integer> rddAvgTip = rdd.mapToPair(
+                row -> {
+                    OffsetDateTime odt = row._1();
+                    String dateHour = getDateHour(odt);
+
+                    Tuple2<String, Double> key = new Tuple2<>(dateHour, row._3());
+                    return new Tuple2<>(key, 1);
+                });
+        /*
+        for (Tuple2<Tuple2<Integer, Double>, Integer> s : rddAvgTip.take(10)) {
+            System.out.println(s);
+        }
+
+         */
+
+        // (ora, pagamento), numero occorrenze) --> ((1,1.0),45)
+        System.out.println( " ----- reduced ------ ");
+
+        JavaPairRDD<Tuple2<String, Double>, Integer> reduced = rddAvgTip.reduceByKey(
+                (a, b) -> a + b
+        );
+        /*
+        for (Tuple2<Tuple2<Integer, Double>, Integer> s : reduced.take(10)) {
+            System.out.println(s);
+        }
+
+         */
+
+
+        System.out.println( " ----- boh ------ ");
+        // (ora, (pagamento, numero occorrenze) --> (1,(1.0,45))
+        JavaPairRDD<String , Tuple2<Double, Integer>> boh = reduced.mapToPair(
+                row -> new Tuple2<>(row._1()._1(), new Tuple2<>(row._1()._2(), row._2())));
+
+        /*
+        for (Tuple2<Integer, Tuple2<Double, Integer>> s : boh.take(10)) {
+            System.out.println(s);
+        }
+
+         */
+
+
+        System.out.println( " ----- boh2 ------ ");
+        // (ora, lista(pagamento, numero occorrenze)) --> (1,[(4.0,550), (1.0,61138), (2.0,16766), (3.0,476), (0.0,2951)])
+        JavaPairRDD<String, Iterable<Tuple2<Double, Integer>>> boh2 = boh.groupByKey();
+        /*
+        for (Tuple2<Integer, Iterable<Tuple2<Double, Integer>>> s : boh2.collect()) {
+            System.out.println(s);
+        }
+
+         */
+
+
+        //calcolo most popular payment
+        /*
+        Tuple2<Double, Integer> maxTuple = null;
+        Integer maxOccurrence = 0;
+
+         */
+        JavaPairRDD<String, Tuple2<Double, Integer>> finale = boh2.mapToPair(
+                elem -> new Tuple2<>(elem._1(), getMaxOccurence2(elem._2()))
+        );
+        System.out.println("---     finale     ---");
+        /*
+        for (Tuple2<Integer, Tuple2<Double, Integer>> s : finale.collect()) {
+            System.out.println(s);
+        }
+         */
+        return finale;
+
+    }
     // VEHHIO PRIMA DELLA TRACCIA NUOVA
     private static JavaPairRDD<Integer, Integer> CalculateDistribution(JavaRDD<Tuple3<LocalDateTime, Double, Double>> rdd) {
         System.out.println(" --------------- CalculateDistribution ----------------");
@@ -425,20 +496,21 @@ public class Query2 {
 
     }
 
-    private static JavaPairRDD<Integer, Tuple2<Double, Double>> CalculateAvgStDevTip2(JavaRDD<Tuple3<LocalDateTime, Double, Double>> rdd2) {
+    private static JavaPairRDD<String, Tuple2<Double, Double>> CalculateAvgStDevTip2(JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rdd2) {
         System.out.println(" --------------- CalculateAvgStDevTip2 ----------------");
 
-        JavaPairRDD<Integer, Double> rddAvgTip = rdd2.mapToPair(
+        JavaPairRDD<String, Double> rddAvgTip = rdd2.mapToPair(
                 word -> {
-                    LocalDateTime odt = word._1();
-                    Integer key = odt.getHour();
+                    OffsetDateTime odt = word._1();
+                    //Integer key = odt.getHour();
+                    String key = getDateHour(odt);
+
                     //Tuple2<Double,Integer> value = new Tuple2<>(word._3(),1);
 
-                    return new Tuple2<>(key, word._3());
+                    return new Tuple2<>(key, word._4());
                 });
 
-        //JavaRDD<Tuple3<String, Double, Double>> output = rddAvgTip
-        JavaPairRDD<Integer, Tuple2<Double,Double>> output = rddAvgTip
+        JavaPairRDD<String, Tuple2<Double, Double>> output = rddAvgTip
                 .aggregateByKey(
                         new StatCounter(),
                         StatCounter::merge,

@@ -1,6 +1,7 @@
 package SQLqueries;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -9,9 +10,11 @@ import scala.Tuple4;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
+import utils.CsvWriter;
 import utils.QueriesPreprocessing;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class SqlQuery1 {
@@ -24,10 +27,13 @@ public class SqlQuery1 {
     //public static void main (String[] args) {
     public static void query1SQLMain(JavaRDD<String> rdd, SparkSession spark) {
 
+        /*
         JavaRDD<Tuple4<LocalDateTime, Double, Double, Double>> rddPreproc = QueriesPreprocessing.Query1Preprocessing(rdd);;
         System.out.println("Query 1 Spark SQL");
 
         calculateQuery1SQL(spark, rddPreproc);
+
+         */
 
     }
 
@@ -48,6 +54,20 @@ public class SqlQuery1 {
         // utilizzarlo in un'altra funzione
         result.show();
 
+        for(Iterator<Row> iter = result.toLocalIterator(); iter.hasNext();) {
+            String[] item = ((iter.next()).toString().split(","));
+            System.out.println(" item ===  " + item);
+        }
+       //CsvWriter.writeQuery1SQL(result);
+        //result.write().format("csv").save("./results/query1SQL.csv");
+       /*
+        result.foreach(
+               (ForeachFunction<Row>) row -> System.out.println( " row.get(0) == " + row.get(0) + "row.get(1) == " + row.get(1))
+       );
+
+        */
+
+         
     }
 
     private static Dataset<Row> createSchemaFromPreprocessedData(SparkSession spark,

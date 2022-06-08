@@ -6,6 +6,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -28,8 +29,9 @@ public class CsvWriter {
 
 
 
-    public static String pathQuery2Results = "results/resultsQuery2.csv";
     public static String pathQuery1Results = "results/resultsQuery1.csv";
+    public static String pathQuery2Results = "results/resultsQuery2.csv";
+    public static String pathQuery1SQLResults = "results/resultsQuery1SQL.csv";
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder()
@@ -344,5 +346,34 @@ public class CsvWriter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void writeQuery1SQL(Dataset<Row> result) {
+        try {
+            FileWriter csvWriter = new FileWriter(pathQuery1SQLResults);
+            csvWriter.append("Month");
+            csvWriter.append(",");
+            csvWriter.append("avg tip/(total amount - toll amount)");
+            csvWriter.append("\n");
+            result.foreach(
+                    (ForeachFunction<Row>) row -> {
+                        Object row0 = row.get(0);
+                        Object row1 = row.get(1);
+                        row0.toString();
+
+                        csvWriter.append(row0.toString());
+                        csvWriter.append(",");
+                        csvWriter.append(row1.toString());
+                        csvWriter.append("\n");
+
+
+                    }
+            );
+            csvWriter.flush();
+            csvWriter.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }

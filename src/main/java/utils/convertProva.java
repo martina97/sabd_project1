@@ -6,11 +6,30 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Iterator;
 
 public class convertProva {
     public static void main(String[] args) {
+        long occ = 14;
+        int num = 1;
+
+        System.out.println(Math.ceil((num*100)/occ));
+        System.out.println(Math.round((num*100)/occ));
+        System.out.println(Math.ceil((num*100)/(float)occ));
+        System.out.println(Math.round((num*100)/(float)occ));
+        DecimalFormat df = new DecimalFormat("0.00");
+        BigDecimal bd = new BigDecimal(num*100/(float)occ).setScale(2, RoundingMode.HALF_UP);
+
+        System.out.println(df.format(num*100/(float)occ));
+        System.out.println(bd.doubleValue());
+
+    }
+
+        public static void start() {
         SparkConf conf = new SparkConf()
                 .setMaster("local")
                 .setAppName("Hello World");

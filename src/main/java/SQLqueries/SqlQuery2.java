@@ -12,13 +12,16 @@ import scala.Tuple3;
 import utils.QueriesPreprocessing;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class SqlQuery2 {
     public static void query2SQLMain(JavaRDD<String> rdd, SparkSession spark) {
-        JavaRDD<Tuple3<LocalDateTime, Double, Double>> rddPreproc = QueriesPreprocessing.Query2Preprocessing(rdd).cache();
+
+
+        JavaRDD<Tuple3<OffsetDateTime, Double, Double>> rddPreproc = QueriesPreprocessing.Query2Preprocessing(rdd).cache();
         System.out.println("Query 2 Spark SQL");
         //calculateQuery2SQL(spark, rddPreproc);
 
@@ -184,7 +187,7 @@ public class SqlQuery2 {
     }
 
 
-    private static Dataset<Row> createSchemaFromPreprocessedDataQ2(SparkSession spark, JavaRDD<Tuple3<LocalDateTime, Double, Double>> rdd) {
+    private static Dataset<Row> createSchemaFromPreprocessedDataQ2(SparkSession spark, JavaRDD<Tuple3<OffsetDateTime, Double, Double>> rdd) {
         // Generate the schema based on the string of schema
 
         List<StructField> fields = new ArrayList<>();
@@ -195,7 +198,7 @@ public class SqlQuery2 {
 
         // Convert records of the RDD to Rows
         JavaRDD<Row> rowRDD = rdd.map(val -> {
-            LocalDateTime date = val._1();
+            OffsetDateTime date = val._1();
             return RowFactory.create(date.getHour(), val._2(), val._3());
         });
 

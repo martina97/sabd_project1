@@ -8,20 +8,21 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-import scala.Tuple3;
+import scala.Tuple4;
 import utils.QueriesPreprocessing;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static queries.Query2.getDateHour;
 
 
 public class SqlQuery2 {
     public static void query2SQLMain(JavaRDD<String> rdd, SparkSession spark) {
 
 
-        JavaRDD<Tuple3<OffsetDateTime, Double, Double>> rddPreproc = QueriesPreprocessing.Query2Preprocessing(rdd).cache();
+        JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rddPreproc = QueriesPreprocessing.Query2Preprocessing2(rdd).cache();
         System.out.println("Query 2 Spark SQL");
         //calculateQuery2SQL(spark, rddPreproc);
 
@@ -36,7 +37,7 @@ public class SqlQuery2 {
 
         // --------  Calcolo Distribution of the number of trips distrNumbTripPerH  --------
 
-        Dataset<Row> tripDistribution = calculateDistributionTrip(df, spark);
+        Dataset<Row> tripDistribution = calculateDistributionTrip2(df, spark);
         tripDistribution.createOrReplaceTempView("tripDistribution");
 
 
@@ -119,6 +120,7 @@ public class SqlQuery2 {
 
     }
 
+
     private static Dataset<Row> calculateTopPaymentMethod(Dataset<Row> df, SparkSession spark) {
         System.out.println("\n\n ---------- calculateTopPaymentMethod ---------- ");
         Dataset<Row> result = spark.sql(
@@ -183,23 +185,50 @@ public class SqlQuery2 {
         // il risultato di questa query lo chiamo "temp", e da questo momento posso
         // utilizzarlo in un'altra funzione
         result.show();
+
+
+        return result;
+    }
+    private static Dataset<Row> calculateDistributionTrip2(Dataset<Row> df, SparkSession spark) {
+        System.out.println("\n\n ---------- calculateDistributionTrip ---------- ");
+        Dataset<Row> result = spark.sql(
+                "SELECT tpep_pickup_datetime, count(tpep_pickup_datetime) AS distribution FROM query2  " +
+                        "GROUP BY tpep_pickup_datetime order by tpep_pickup_datetime");
+
+        result.createOrReplaceTempView("result");
+
+        // il risultato di questa query lo chiamo "temp", e da questo momento posso
+        // utilizzarlo in un'altra funzione
+        result.show();
+
+        Dataset<Row> result2 =   spark.sql(
+                "SELECT tpep_pickup_datetime,PULocationID, count(PULocationID) from query2" +
+                        " GROUP BY tpep_pickup_datetime, PULocationID"
+        );
+        result2.createOrReplaceTempView("result2");
+        result2.show();
+
+
+
+
+
         return result;
     }
 
-
-    private static Dataset<Row> createSchemaFromPreprocessedDataQ2(SparkSession spark, JavaRDD<Tuple3<OffsetDateTime, Double, Double>> rdd) {
+    private static Dataset<Row> createSchemaFromPreprocessedDataQ2(SparkSession spark, JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rdd) {
         // Generate the schema based on the string of schema
 
         List<StructField> fields = new ArrayList<>();
-        fields.add(DataTypes.createStructField("tpep_pickup_datetime", DataTypes.IntegerType, true));
+        fields.add(DataTypes.createStructField("tpep_pickup_datetime", DataTypes.StringType, true));
+        fields.add(DataTypes.createStructField("PULocationID",     DataTypes.LongType, true));
         fields.add(DataTypes.createStructField("payment_type",     DataTypes.DoubleType, true));
         fields.add(DataTypes.createStructField("tip_amount",         DataTypes.DoubleType, true));
         StructType schema = DataTypes.createStructType(fields);
 
         // Convert records of the RDD to Rows
         JavaRDD<Row> rowRDD = rdd.map(val -> {
-            OffsetDateTime date = val._1();
-            return RowFactory.create(date.getHour(), val._2(), val._3());
+            String dateHour = getDateHour(val._1());
+            return RowFactory.create(dateHour, val._2(), val._3(), val._4());
         });
 
         // Apply the schema to the RDD
@@ -207,7 +236,7 @@ public class SqlQuery2 {
         // dal java rdd rowRDD
         // questo dataset è interrogabile tramite queries SQL.
         Dataset<Row> df = spark.createDataFrame(rowRDD, schema);
-        //df.show();
+        df.show();
 
         return df;
     }

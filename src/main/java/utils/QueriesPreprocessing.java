@@ -144,6 +144,42 @@ public class QueriesPreprocessing {
                 .filter(x -> x._2() == 1);
 
     }
+    public static JavaRDD<Tuple5<OffsetDateTime, Double, Double, Double, Double>> Query1PreprocessingCSV(JavaRDD<String> dataset) {
+        // remove header
+        //String header = dataset.first();
+        //System.out.println("header == " + header);
+        //todo: non rimuovere header con file parquet
+        String header = dataset.first();
+        //System.out.println("header == " + header);
+        return dataset.filter(x -> !(x.contains(header) & !(x.contains("NaN")))).map(
+                row -> {
+                            String[] myFields = row.split(",");
+                            //System.out.println("tip == " + myFields[14] + "toll == " + myFields[15] + "tot == " +myFields[17]);
+
+                            //System.out.println(myFields[1]);
+
+                    OffsetDateTime odt = OffsetDateTime.parse( myFields[1]);
+
+                    //System.out.println("odt == " + odt);
+
+                    //LocalDate ld = LocalDate.parse( myFields[1] , f ) ;
+                    //System.out.println("ld == " + ld);
+                    OffsetDateTime tpep_pickup_datetime = odt;
+
+                            //System.out.println("month == " + month + ", hour == " + hour);
+
+                            //System.out.println("month == " + month + ", hour == " + hour);
+                            Double payment_type = Double.valueOf(myFields[9]);
+                            Double tip = Double.valueOf(myFields[13]);
+                            Double toll = Double.valueOf(myFields[14]);
+                            Double tot = Double.valueOf(myFields[16]);
+                            return new Tuple5<>(tpep_pickup_datetime, payment_type, tip, toll, tot);
+                        })
+                .filter(x -> !(Double.isNaN(x._2())) & !(Double.isNaN(x._3())) & !(Double.isNaN(x._4())))
+                .filter(x -> (x._1().getMonthValue() == 12 & x._1().getYear() == 2021) || x._1().getYear() == 2022 & (x._1().getMonthValue() == 1 || x._1().getMonthValue() == 2))
+                .filter(x -> x._2() == 1);
+
+    }
     public static JavaRDD<Tuple3<OffsetDateTime, Double, Double>> Query2Preprocessing(JavaRDD<String> dataset) {
         // remove header
         // todo: con i file parquet non si copia l'header, quindi non devo toglierlo !!

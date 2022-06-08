@@ -1,18 +1,17 @@
 package SQLqueries;
 
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.StructField;
-import scala.Tuple4;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
-import utils.CsvWriter;
+import scala.Tuple5;
 import utils.QueriesPreprocessing;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -27,17 +26,17 @@ public class SqlQuery1 {
     //public static void main (String[] args) {
     public static void query1SQLMain(JavaRDD<String> rdd, SparkSession spark) {
 
-        /*
-        JavaRDD<Tuple4<LocalDateTime, Double, Double, Double>> rddPreproc = QueriesPreprocessing.Query1Preprocessing(rdd);;
+
+        JavaRDD<Tuple5<OffsetDateTime, Double, Double, Double, Double>> rddPreproc = QueriesPreprocessing.Query1PreprocessingCSV(rdd);
         System.out.println("Query 1 Spark SQL");
 
         calculateQuery1SQL(spark, rddPreproc);
 
-         */
+
 
     }
 
-    private static void calculateQuery1SQL(SparkSession spark, JavaRDD<Tuple4<LocalDateTime, Double, Double, Double>> rdd) {
+    private static void calculateQuery1SQL(SparkSession spark, JavaRDD<Tuple5<OffsetDateTime, Double, Double, Double, Double>> rdd) {
         // Register the DataFrame as a SQL temporary view named "query1"
         //creo dataset partendo dai dati che sono coppie javaRDD
         Dataset<Row> df = createSchemaFromPreprocessedData(spark, rdd);
@@ -71,12 +70,13 @@ public class SqlQuery1 {
     }
 
     private static Dataset<Row> createSchemaFromPreprocessedData(SparkSession spark,
-                                                                 JavaRDD<Tuple4<LocalDateTime, Double, Double, Double>> values){
+                                                                 JavaRDD<Tuple5<OffsetDateTime, Double, Double, Double, Double>> values){
 
         // Generate the schema based on the string of schema
 
         List<StructField> fields = new ArrayList<>();
         fields.add(DataTypes.createStructField("tpep_pickup_datetime", DataTypes.StringType, true));
+        fields.add(DataTypes.createStructField("payment_type", DataTypes.DoubleType, true));
         fields.add(DataTypes.createStructField("tip_amount",     DataTypes.DoubleType, true));
         fields.add(DataTypes.createStructField("tolls_amount",         DataTypes.DoubleType, true));
         fields.add(DataTypes.createStructField("total_amount",         DataTypes.DoubleType, true));
@@ -84,9 +84,9 @@ public class SqlQuery1 {
 
         // Convert records of the RDD to Rows
         JavaRDD<Row> rowRDD = values.map(val -> {
-            LocalDateTime date = val._1();
+            OffsetDateTime date = val._1();
             String month = date.getYear()+ "-"+date.getMonthValue();
-            return RowFactory.create(month, val._2(), val._3(),val._4());
+            return RowFactory.create(month, val._2(), val._3(),val._4(), val._5());
         });
 
         // Apply the schema to the RDD
@@ -94,20 +94,22 @@ public class SqlQuery1 {
         // dal java rdd rowRDD
         // questo dataset è interrogabile tramite queries SQL.
         Dataset<Row> df = spark.createDataFrame(rowRDD, schema);
+        df.show();
 
         /*
-        +--------------------+----------+------------+------------+
-        |tpep_pickup_datetime|tip_amount|tolls_amount|total_amount|
-        +--------------------+----------+------------+------------+
-        | 2021-12-01 00:19:51|       7.6|        6.55|        45.7|
-        | 2021-12-01 00:29:07|       0.0|         0.0|        16.8|
-        | 2021-12-01 00:42:53|       1.5|         0.0|        14.8|
-        | 2021-12-01 00:25:04|      11.1|        6.55|        55.7|
-        | 2021-12-01 00:40:04|      6.15|         0.0|       36.45|
-        | 2021-12-01 00:05:32|       2.0|         0.0|        18.8|
-        +--------------------+----------+------------+------------+
-
-
+        +--------------------+------------+----------+------------+------------+
+        |tpep_pickup_datetime|payment_type|tip_amount|tolls_amount|total_amount|
+        +--------------------+------------+----------+------------+------------+
+        |             2021-12|         1.0|       7.6|        6.55|        45.7|
+        |             2021-12|         1.0|       2.0|         0.0|        19.3|
+        |             2021-12|         1.0|      2.05|         0.0|       12.35|
+        |             2021-12|         1.0|      5.42|        6.55|       41.52|
+        |             2021-12|         1.0|       1.0|         0.0|        14.8|
+        |             2021-12|         1.0|      3.35|         0.0|       14.65|
+        |             2021-12|         1.0|      2.86|         0.0|       17.16|
+        |              2022-1|         1.0|      2.25|         0.0|       18.05|
+        |              2022-1|         1.0|      3.06|         0.0|       18.36|
+        +--------------------+------------+----------+------------+------------+
          */
 
         return df;

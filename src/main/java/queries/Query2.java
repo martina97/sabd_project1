@@ -30,7 +30,7 @@ public class Query2 {
         // --------  Calcolo Distribution of the number of trips distrNumbTripPerH  --------
         //JavaPairRDD<Integer, Integer> distrNumbTripPerH = CalculateDistribution(rdd2).sortByKey();
 
-       // CalculateDistribution4(rdd2);
+        JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> distrNumbTripPerH = CalculateDistribution4(rdd2);
         //todo: ordino la lista dei valori quando scrivo il csv !!!!!
         /*
         System.out.println( "------- distrNumbTripPerH ------- ");
@@ -50,14 +50,9 @@ public class Query2 {
 
        JavaPairRDD<String, Tuple2<Double, Double>> avgAndStDevTip2 = CalculateAvgStDevTip2(rdd2);
         System.out.println( "------- avgAndStDevTip ------- ");
-
-
-
         for (Tuple2<String, Tuple2<Double, Double>> s : avgAndStDevTip2.collect()) {
             System.out.println(s);
         }
-
-
 
 
 
@@ -233,7 +228,7 @@ public class Query2 {
     }
 
 
-    private static void CalculateDistribution4(JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rdd) {
+    private static JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> CalculateDistribution4(JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rdd) {
         System.out.println(" --------------- CalculateDistribution ----------------");
 
         JavaPairRDD<String, Tuple2<Long, Integer>> prova = rdd.mapToPair(
@@ -293,6 +288,7 @@ public class Query2 {
         for (Tuple2<String, Iterable<Tuple2<Long, Double>>> s: prova5.collect()) {
             System.out.println(s);
         }
+        return prova5;
     }
 
 
@@ -549,7 +545,7 @@ public class Query2 {
 
     }
 
-    private static String getDateHour(OffsetDateTime odt) {
+    public static String getDateHour(OffsetDateTime odt) {
         //String tpep_pickup_datetime = word._1().toString();
         int hourInt = odt.getHour();
         String hour = String.valueOf(hourInt);

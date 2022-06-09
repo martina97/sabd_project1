@@ -294,4 +294,48 @@ public class QueriesPreprocessing {
                 .filter(x-> (x._1().getMonthValue() == 12 & x._1().getYear() == 2021) || x._1().getYear() == 2022 &(x._1().getMonthValue() == 1 || x._1().getMonthValue() == 2));
 
     }
+
+
+    public static JavaRDD<Tuple4<OffsetDateTime, Double, Long, Double>> Query3Preprocessing(JavaRDD<String> dataset) {
+        // remove header
+        // todo: con i file parquet non si copia l'header, quindi non devo toglierlo !!
+        String header = dataset.first();
+        //System.out.println("header == " + header);
+        return dataset.filter(x -> !(x.contains(header) & !(x.contains("NaN")))).map(
+                        // return dataset.filter(x -> !(x.contains("NaN"))).map(
+                        row -> {
+                            String[] myFields = row.split(",");
+                            //System.out.println("tip == " + myFields[14] + "toll == " + myFields[15] + "tot == " +myFields[17]);
+
+                            //System.out.println(myFields[1]);
+
+                            OffsetDateTime odt = OffsetDateTime.parse( myFields[1]);
+
+                            //System.out.println("odt == " + odt);
+
+                            //LocalDate ld = LocalDate.parse( myFields[1] , f ) ;
+                            //System.out.println("ld == " + ld);
+                            OffsetDateTime tpep_pickup_datetime = odt;
+
+                            /* todo: scommentare con file parquet
+                            Date temp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS")
+                                    .parse(myFields[1]);
+                            //System.out.println(temp);
+                            LocalDateTime tpep_pickup_datetime = temp.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+
+                            int month = tpep_pickup_datetime.getMonthValue();
+                            int hour = tpep_pickup_datetime.getHour();
+
+                             */
+                            Double passenger_count = Double.valueOf(myFields[3]);
+                            //System.out.println("month == " + month + ", hour == " + hour);
+                            long DOLocationID= Long.parseLong(myFields[8]);
+                            Double fare_amount= Double.valueOf(myFields[10]);
+                            return new Tuple4<>(tpep_pickup_datetime,passenger_count,DOLocationID, fare_amount);
+                        })
+                .filter( x -> !(Double.isNaN(x._3())) & !(Double.isNaN(x._4())))
+                .filter(x-> (x._1().getMonthValue() == 12 & x._1().getYear() == 2021) || x._1().getYear() == 2022 &(x._1().getMonthValue() == 1 || x._1().getMonthValue() == 2));
+
+    }
 }

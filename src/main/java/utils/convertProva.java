@@ -1,19 +1,126 @@
 package utils;
 
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SparkSession;
+import scala.Array;
 import scala.Tuple2;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.*;
+
+
 
 public class convertProva {
     public static void main(String[] args) {
+
+        SparkConf conf = new SparkConf()
+                .setMaster("local")
+                .setAppName("Hello World");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        /*
+         * As data source, we can use a file stored on the local file system
+         * or on the HDFS, or we can parallelize
+         */
+//        JavaRDD<String> input = sc.textFile("hdfs://HOST:PORT/input");
+//        JavaRDD<String> input = sc.textFile("input");
+        JavaRDD<String> input = sc.parallelize(Arrays.asList(
+                "a,40",
+                "a,20",
+                "a,20",
+                "a,20",
+                "a,30",
+                "a,30",
+                "b,30",
+                "b,10",
+                "b,10",
+                "a,40",
+                "b,40",
+                "b,20",
+                "c,10",
+                "c,10",
+                "c,20"
+        ));
+
+        for (String s : input.collect())
+        {
+            System.out.println(s);
+        }
+
+        JavaPairRDD<Tuple2<String, Integer>, Integer> prova = input.mapToPair(
+                row -> {
+                    String[] myFields = row.split(",");
+                    return new Tuple2<>(new Tuple2<>(myFields[0], Integer.valueOf(myFields[1])), 1);
+                }
+        );
+        System.out.println(" ---- prova -----");
+        for (Tuple2 s : prova.collect())
+        {
+            System.out.println(s);
+        }
+
+        JavaPairRDD<Tuple2<String, Integer>, Integer> prova2 = prova.reduceByKey(
+                (a, b) -> a + b
+        );
+        System.out.println(" ---- prova2 -----");
+        for (Tuple2<Tuple2<String, Integer>, Integer> s : prova2.collect())
+        {
+            System.out.println(s);
+        }
+
+        JavaPairRDD<Tuple2<String,Integer>, Integer> prova3 = prova2.mapToPair(row -> new Tuple2<>(new Tuple2(row._1._1, row._2), row._1._2));
+        System.out.println(" ---- prova3 -----");
+        for (Tuple2<Tuple2<String, Integer>, Integer> s : prova3.collect())
+        {
+            System.out.println(s);
+        }
+        JavaPairRDD<Tuple2<String, Integer>, Integer> prova4 = prova3.sortByKey(new Tuple2Comparator());
+
+        //JavaPairRDD<Tuple2<String, Integer>, Integer> prova4 = prova3.sortByKey(new Tuple2Comparator(), true, 1);
+        System.out.println(" ---- prova4 -----");
+        for (Tuple2<Tuple2<String, Integer>, Integer> s : prova4.collect())
+        {
+            System.out.println(s);
+        }
+
+        JavaPairRDD<String, Iterable<Tuple2<Integer, Integer>>> prova5 = prova4.mapToPair(x -> new Tuple2<>(x._1._1, new Tuple2<>(x._1._2, x._2))).groupByKey();
+
+        System.out.println(" ---- prova5 -----");
+        for (Tuple2<String, Iterable<Tuple2<Integer, Integer>>> s : prova5.collect())
+        {
+            System.out.println(s);
+        }
+
+
+
+        /*
+        JavaPairRDD<String, Iterable<Integer>> prova2 = prova.groupByKey();
+        System.out.println(" ---- prova2 -----");
+
+
+        for (Tuple2<String, Iterable<Integer>> s : prova2.collect())
+        {
+            TreeMap map = new TreeMap();
+            //System.out.println(s);
+            System.out.println(s._2());
+            Iterator<Integer> iterator = s._2.iterator();
+            while (iterator.hasNext()) {
+                map.
+            }
+
+        }
+
+         */
+
+
+
+        /*
         long occ = 14;
         int num = 1;
 
@@ -26,6 +133,8 @@ public class convertProva {
 
         System.out.println(df.format(num*100/(float)occ));
         System.out.println(bd.doubleValue());
+
+         */
 
     }
 

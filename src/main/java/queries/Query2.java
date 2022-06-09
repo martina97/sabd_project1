@@ -1,5 +1,6 @@
 package queries;
 
+import avro.shaded.com.google.common.collect.Iterables;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.util.StatCounter;
@@ -23,7 +24,7 @@ public class Query2 {
 
     public static void query2Main(JavaRDD<String> rdd) {
         //public static void main(String[] args) {
-        JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rdd2 = QueriesPreprocessing.Query2Preprocessing2(rdd).cache();
+        JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> rdd2 = QueriesPreprocessing.Query2Preprocessing(rdd).cache();
         //JavaRDD<Tuple3<OffsetDateTime, Double, Double>> rdd2 = QueriesPreprocessing.preprocData(rdd);
         //System.out.println("dopo preproc == " + rdd2.count());
 
@@ -31,46 +32,42 @@ public class Query2 {
         // --------  Calcolo Distribution of the number of trips distrNumbTripPerH  --------
         //JavaPairRDD<Integer, Integer> distrNumbTripPerH = CalculateDistribution(rdd2).sortByKey();
 
-        //JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> distrNumbTripPerH = CalculateDistribution4(rdd2);
-        //todo: ordino la lista dei valori quando scrivo il csv !!!!!
         /*
+        JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> distrNumbTripPerH = CalculateDistribution4(rdd2);
+        //todo: ordino la lista dei valori quando scrivo il csv !!!!!
+        //todo: posso creare una mappa in cui la chiave e' la zona e id e' percentuale?
         System.out.println( "------- distrNumbTripPerH ------- ");
-        for (Tuple2<Tuple2<String, Long>, Integer> s : distrNumbTripPerH.collect()) {
+        for (Tuple2<String, Iterable<Tuple2<Long, Double>>> s : distrNumbTripPerH.take(10)) {
             System.out.println(s);
         }
-
-         */
-
-
-
-
-
 
 
         //--------   Calcolo average tip and its standard deviation --------
-/*
+
        JavaPairRDD<String, Tuple2<Double, Double>> avgAndStDevTip2 = CalculateAvgStDevTip2(rdd2);
         System.out.println( "------- avgAndStDevTip ------- ");
-        for (Tuple2<String, Tuple2<Double, Double>> s : avgAndStDevTip2.collect()) {
+        for (Tuple2<String, Tuple2<Double, Double>> s : avgAndStDevTip2.take(10)) {
             System.out.println(s);
         }
 
- */
+
+         */
+
 
 
 
         // -------- Calcolo the most popular payment method --------
 
       // JavaPairRDD<String, Tuple2<Double, Integer>> mostPopularPayment = CalculateTopPayment3(rdd2);
-      CalculateTopPaymentComparator(rdd2);
+        JavaPairRDD<String, Iterable<Tuple2<Integer, Double>>> mostPopularPayment = CalculateTopPaymentComparator(rdd2);
         System.out.println( "------- mostPopularPayment ------- ");
-        /*
 
-        for (Tuple2<String, Tuple2<Double, Integer>> s : mostPopularPayment.sortByKey().collect()) {
+
+        for (Tuple2<String, Iterable<Tuple2<Integer, Double>>> s : mostPopularPayment.sortByKey().take(10)) {
             System.out.println(s);
         }
 
-         */
+
 
 
 
@@ -101,7 +98,7 @@ public class Query2 {
 
                     //String tpep_pickup_datetime = word._1().toString();
                     OffsetDateTime odt = word._1();
-                    String dateHour = getDateHour(odt);
+                    String dateHour = getDateHour(LocalDateTime.from(odt));
                     Tuple2<String, Long> key = new Tuple2<>(dateHour, word._2());
                     //Integer key = odt.getHour();
                     //System.out.println("key == " + key);
@@ -235,14 +232,14 @@ public class Query2 {
     }
 
 
-    private static JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> CalculateDistribution4(JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rdd) {
+    private static JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> CalculateDistribution4(JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> rdd) {
         System.out.println(" --------------- CalculateDistribution ----------------");
 
         JavaPairRDD<String, Tuple2<Long, Integer>> prova = rdd.mapToPair(
                 word -> {
 
                     //String tpep_pickup_datetime = word._1().toString();
-                    OffsetDateTime odt = word._1();
+                    LocalDateTime odt = word._1();
                     String dateHour = getDateHour(odt);
                     Tuple2<Long, Integer> value = new Tuple2<>(word._2(), 1);
                     //Integer key = odt.getHour();
@@ -253,48 +250,59 @@ public class Query2 {
 
                     return new Tuple2<>(dateHour, value);
                 });
+        /*
         System.out.println(" ---- prova ------ ");
         for (Tuple2<String, Tuple2<Long, Integer>> s : prova.collect()) {
             System.out.println(s);
         }
 
+         */
+
         Map<String, Long> map = prova.countByKey();
-        System.out.println(" map === " + map);
+        //System.out.println(" map === " + map);
 
 
         JavaPairRDD<Tuple2<String, Long>, Integer>  prova2 = prova.mapToPair(row -> new Tuple2(new Tuple2<>(row._1, row._2._1), row._2._2));
-        for (Tuple2<Tuple2<String, Long>, Integer> s : prova2.collect()) {
+       /* for (Tuple2<Tuple2<String, Long>, Integer> s : prova2.collect()) {
             System.out.println(s);
         }
 
+        */
+
         JavaPairRDD<Tuple2<String, Long>, Integer> prova3 = prova2.reduceByKey((x, y) -> x + y); // We reduce the elements by key (tpep_pickup hour) and count
-        System.out.println(" ----- prova3 ----- ");
+       /* System.out.println(" ----- prova3 ----- ");
         for (Tuple2<Tuple2<String, Long>, Integer> s: prova3.collect()) {
             System.out.println(s);
         }
+
+        */
 
         JavaPairRDD<String, Tuple2<Long, Double>> prova4 = prova3.mapToPair(
                 row -> {
                     //long perc =Math.round(row._2 * 100/ (float)map.get(row._1._1));
                     double perc = new BigDecimal(row._2 * 100 / (float) map.get(row._1._1)).setScale(2, RoundingMode.HALF_UP).doubleValue(); //arrotondo a 2 cifre decimali
 
-                    System.out.println(" occ == " + map.get(row._1._1));
-                    System.out.println(" val == " + row._2 + ", zone == " + row._1()._2() + ", perc === " + perc);
                     //Long occ = map.get(row._1._1);
                    // System.out.println(" occ === " + occ);
                     return new Tuple2<>(row._1()._1(), new Tuple2<>(row._1()._2(), perc));
                 }
         );
+        /*
         System.out.println(" ----- prova4 ----- ");
         for (Tuple2<String, Tuple2<Long, Double>> s: prova4.collect()) {
             System.out.println(s);
         }
         System.out.println(" ----- prova5 ----- ");
 
+         */
+
         JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> prova5 = prova4.groupByKey();
+        /*
         for (Tuple2<String, Iterable<Tuple2<Long, Double>>> s: prova5.collect()) {
             System.out.println(s);
         }
+
+         */
         return prova5;
     }
 
@@ -402,7 +410,7 @@ public class Query2 {
         JavaPairRDD<Tuple2<String, Double>, Integer> rddAvgTip = rdd.mapToPair(
                 row -> {
                     OffsetDateTime odt = row._1();
-                    String dateHour = getDateHour(odt);
+                    String dateHour = getDateHour(LocalDateTime.from(odt));
 
                     Tuple2<String, Double> key = new Tuple2<>(dateHour, row._3());
                     return new Tuple2<>(key, 1);
@@ -471,13 +479,12 @@ public class Query2 {
 
     }
 
-    private static void CalculateTopPaymentComparator(JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rdd) {
-        System.out.println(" --------------- CalculateTopPayment ----------------");
+    private static JavaPairRDD<String, Iterable<Tuple2<Integer, Double>>> CalculateTopPaymentComparator(JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> rdd) {
 
         // ((ora,pagamento),1) --> ((1,1.0),1)
         JavaPairRDD<Tuple2<String, Double>, Integer> rddAvgTip = rdd.mapToPair(
                 row -> {
-                    OffsetDateTime odt = row._1();
+                    LocalDateTime odt = row._1();
                     String dateHour = getDateHour(odt);
 
                     Tuple2<String, Double> key = new Tuple2<>(dateHour, row._3());
@@ -491,7 +498,7 @@ public class Query2 {
          */
 
         // (ora, pagamento), numero occorrenze) --> ((1,1.0),45)
-        System.out.println( " ----- reduced ------ ");
+        //System.out.println( " ----- reduced ------ ");
 
         JavaPairRDD<Tuple2<String, Double>, Integer> reduced = rddAvgTip.reduceByKey(
                 (a, b) -> a + b
@@ -504,29 +511,53 @@ public class Query2 {
          */
 
 
-        System.out.println( " ----- boh ------ ");
+        //System.out.println( " ----- boh ------ ");
         // (ora, numero occorrenze), pagamento --> ((1,45), 1.0)
         JavaPairRDD<Tuple2<String, Integer>, Double> boh = reduced.mapToPair(row ->
                 new Tuple2<>(new Tuple2(row._1._1, row._2), row._1._2));
-
+/*
         for (Tuple2<Tuple2<String, Integer>, Double> s : boh.collect()) {
             System.out.println(s);
         }
 
-        JavaPairRDD<Tuple2<String, Integer>, Double> prova2 = boh.sortByKey(new Tuple2Comparator());
+ */
 
+        JavaPairRDD<Tuple2<String, Integer>, Double> prova2 = boh.sortByKey(new Tuple2Comparator());
+/*
         System.out.println(" ---- prova2 -----");
         for (Tuple2<Tuple2<String, Integer>, Double> s : prova2.collect())
         {
             System.out.println(s);
         }
-        JavaPairRDD<String, Iterable<Tuple2<Integer, Double>>> prova5 = prova2.mapToPair(x -> new Tuple2<>(x._1._1, new Tuple2<>(x._1._2, x._2))).groupByKey();
 
+ */
+        JavaPairRDD<String, Iterable<Tuple2<Integer, Double>>> prova5 = prova2
+                .mapToPair(x -> new Tuple2<>(x._1._1, new Tuple2<>(x._1._2, x._2)))
+                .groupByKey();
+/*
         System.out.println(" ---- prova5 -----");
         for (Tuple2<String, Iterable<Tuple2<Integer, Double>>> s : prova5.collect())
         {
             System.out.println(s);
         }
+
+ */
+        JavaPairRDD<String, Tuple2<Integer, Double>> prova6 = prova5.mapToPair(x -> {
+            Iterable<Tuple2<Integer, Double>> iterable = x._2;
+            System.out.println("iterable == " + iterable);
+            Tuple2<Integer, Double> firstElem = Iterables.get(iterable, 0);
+            System.out.println("firstElem ==  " + firstElem);
+
+            System.out.println(" ----- ");
+
+            return new Tuple2<>(x._1, firstElem);
+        });
+        System.out.println(" ---- prova6 -----");
+        for (Tuple2<String, Tuple2<Integer, Double>> s : prova6.sortByKey().take(10))
+        {
+            System.out.println(s);
+        }
+        return prova5;
 
     }
 
@@ -560,12 +591,11 @@ public class Query2 {
 
     }
 
-    private static JavaPairRDD<String, Tuple2<Double, Double>> CalculateAvgStDevTip2(JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rdd2) {
-        System.out.println(" --------------- CalculateAvgStDevTip2 ----------------");
+    private static JavaPairRDD<String, Tuple2<Double, Double>> CalculateAvgStDevTip2(JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> rdd2) {
 
         JavaPairRDD<String, Double> rddAvgTip = rdd2.mapToPair(
                 word -> {
-                    OffsetDateTime odt = word._1();
+                    LocalDateTime odt = word._1();
                     //Integer key = odt.getHour();
                     String key = getDateHour(odt);
 
@@ -613,7 +643,7 @@ public class Query2 {
 
     }
 
-    public static String getDateHour(OffsetDateTime odt) {
+    public static String getDateHour(LocalDateTime odt) {
         //String tpep_pickup_datetime = word._1().toString();
         int hourInt = odt.getHour();
         String hour = String.valueOf(hourInt);

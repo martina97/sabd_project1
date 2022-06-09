@@ -1,7 +1,6 @@
 package queries;
 
 import SQLqueries.SqlQuery1;
-import SQLqueries.SqlQuery2;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.SparkSession;
 import utils.CsvWriter;
@@ -12,12 +11,12 @@ import java.text.ParseException;
 
 public class StartQueries {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         System.out.println("----- start queries ----");
 
         SparkSession spark = SparkSession.builder()
-                .master("local")
+                .master("spark://spark:7077")
                 .appName("Query 1")
                 .getOrCreate();
 
@@ -47,7 +46,8 @@ public class StartQueries {
 
         //System.out.println("\n\n ------ Query 2 SQL--------\n\n ");
         //SqlQuery2.query2SQLMain(rdd, spark);
-        spark.stop();
+       Thread.sleep(86400000); 
+       spark.stop();
 
     }
 

@@ -6,8 +6,8 @@ import org.apache.spark.util.StatCounter;
 import scala.Tuple2;
 import scala.Tuple5;
 import utils.QueriesPreprocessing;
-
-
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
@@ -19,10 +19,12 @@ public class Query1 {
     //public static void main(String[] args) {
 
         JavaRDD<Tuple5<LocalDateTime, Double, Double, Double, Double>> rddPreproc = QueriesPreprocessing.Query1Preprocessing(rdd);
-        System.out.println("rddPreproc count === " + rddPreproc.count());
-
+        //System.out.println("rddPreproc count === " + rddPreproc.count());
+	Instant start = Instant.now();
         // resultRDD : (2021-12, (mean, count))
         JavaPairRDD<String, Tuple2<Double, Long>> resultRDD = computeResults(rddPreproc);
+	Instant end = Instant.now();
+	System.out.println("Durata query1 : " + Duration.between(start,end).toMillis());
         for (Tuple2<String, Tuple2<Double, Long>> s : resultRDD.collect()) {
             System.out.println(s);
         }

@@ -1,5 +1,5 @@
 sudo ./start_docker.sh
-sleep 40
+sleep 20
 sudo ./start_hdfs.sh
-sleep 40
+sleep 20
 sudo ./run_queries.sh

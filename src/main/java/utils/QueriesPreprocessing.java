@@ -16,19 +16,18 @@ import java.util.Date;
 
 public class QueriesPreprocessing {
 
-
+/*
     public static String parquetFile1 = "hdfs://hdfs-namenode:9000/data/yellow_tripdata_2021-12.parquet";
     public static String parquetFile2 = "hdfs://hdfs-namenode:9000/data/yellow_tripdata_2022-01.parquet";
     public static String parquetFile3 = "hdfs://hdfs-namenode:9000/data/yellow_tripdata_2022-02.parquet";
 
-/*
+ */
 
     public static String parquetFile1 = "/home/martina/Documents/data/yellow_tripdata_2021-12.parquet";
     public static String parquetFile2 = "/home/martina/Documents/data/yellow_tripdata_2022-01.parquet";
     public static String parquetFile3 = "/home/martina/Documents/data/yellow_tripdata_2022-02.parquet";
 
 
- */
 
 
 
@@ -182,28 +181,15 @@ public class QueriesPreprocessing {
                 .filter(x -> x._2() == 1);
 
     }
-    public static JavaRDD<Tuple3<OffsetDateTime, Double, Double>> Query2Preprocessing(JavaRDD<String> dataset) {
+    public static JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> Query2Preprocessing(JavaRDD<String> dataset) {
         // remove header
         // todo: con i file parquet non si copia l'header, quindi non devo toglierlo !!
-       String header = dataset.first();
+        String header = dataset.first();
         //System.out.println("header == " + header);
         return dataset.filter(x -> !(x.contains(header) & !(x.contains("NaN")))).map(
-       // return dataset.filter(x -> !(x.contains("NaN"))).map(
+                        // return dataset.filter(x -> !(x.contains("NaN"))).map(
                         row -> {
                             String[] myFields = row.split(",");
-                            //System.out.println("tip == " + myFields[14] + "toll == " + myFields[15] + "tot == " +myFields[17]);
-
-                            //System.out.println(myFields[1]);
-
-                            OffsetDateTime odt = OffsetDateTime.parse( myFields[1]);
-
-                            //System.out.println("odt == " + odt);
-
-                            //LocalDate ld = LocalDate.parse( myFields[1] , f ) ;
-                            //System.out.println("ld == " + ld);
-                            OffsetDateTime tpep_pickup_datetime = odt;
-
-                            /* todo: scommentare con file parquet
                             Date temp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS")
                                     .parse(myFields[1]);
                             //System.out.println(temp);
@@ -213,16 +199,18 @@ public class QueriesPreprocessing {
                             int month = tpep_pickup_datetime.getMonthValue();
                             int hour = tpep_pickup_datetime.getHour();
 
-                             */
-                            //System.out.println("month == " + month + ", hour == " + hour);
 
-                            Double tip_amount = Double.valueOf(myFields[13]);
+                            //System.out.println("month == " + month + ", hour == " + hour);
+                            long PULocationID = Long.parseLong(myFields[7]);
                             Double payment_type = Double.valueOf(myFields[9]);
-                            return new Tuple3<>(tpep_pickup_datetime, payment_type,tip_amount);
+                            Double tip_amount = Double.valueOf(myFields[13]);
+                            return new Tuple4<>(tpep_pickup_datetime,PULocationID, payment_type,tip_amount);
                         })
-                .filter( x -> !(Double.isNaN(x._2())) & !(Double.isNaN(x._3())))
+                .filter( x -> !(Double.isNaN(x._3())) & !(Double.isNaN(x._4())))
                 .filter(x-> (x._1().getMonthValue() == 12 & x._1().getYear() == 2021) || x._1().getYear() == 2022 &(x._1().getMonthValue() == 1 || x._1().getMonthValue() == 2));
+
     }
+
 
     public static JavaRDD<Tuple3<OffsetDateTime, Double, Double>> preprocData(JavaRDD<String> rdd) {
         // remove header

@@ -7,6 +7,7 @@ import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple4;
 import utils.QueriesPreprocessing;
+import utils.Tuple2Comparator;
 
 
 import java.math.BigDecimal;
@@ -30,7 +31,7 @@ public class Query2 {
         // --------  Calcolo Distribution of the number of trips distrNumbTripPerH  --------
         //JavaPairRDD<Integer, Integer> distrNumbTripPerH = CalculateDistribution(rdd2).sortByKey();
 
-        JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> distrNumbTripPerH = CalculateDistribution4(rdd2);
+        //JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> distrNumbTripPerH = CalculateDistribution4(rdd2);
         //todo: ordino la lista dei valori quando scrivo il csv !!!!!
         /*
         System.out.println( "------- distrNumbTripPerH ------- ");
@@ -47,23 +48,29 @@ public class Query2 {
 
 
         //--------   Calcolo average tip and its standard deviation --------
-
+/*
        JavaPairRDD<String, Tuple2<Double, Double>> avgAndStDevTip2 = CalculateAvgStDevTip2(rdd2);
         System.out.println( "------- avgAndStDevTip ------- ");
         for (Tuple2<String, Tuple2<Double, Double>> s : avgAndStDevTip2.collect()) {
             System.out.println(s);
         }
 
+ */
+
 
 
         // -------- Calcolo the most popular payment method --------
 
-       JavaPairRDD<String, Tuple2<Double, Integer>> mostPopularPayment = CalculateTopPayment3(rdd2);
+      // JavaPairRDD<String, Tuple2<Double, Integer>> mostPopularPayment = CalculateTopPayment3(rdd2);
+      CalculateTopPaymentComparator(rdd2);
         System.out.println( "------- mostPopularPayment ------- ");
+        /*
 
         for (Tuple2<String, Tuple2<Double, Integer>> s : mostPopularPayment.sortByKey().collect()) {
             System.out.println(s);
         }
+
+         */
 
 
 
@@ -463,6 +470,67 @@ public class Query2 {
         return finale;
 
     }
+
+    private static void CalculateTopPaymentComparator(JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rdd) {
+        System.out.println(" --------------- CalculateTopPayment ----------------");
+
+        // ((ora,pagamento),1) --> ((1,1.0),1)
+        JavaPairRDD<Tuple2<String, Double>, Integer> rddAvgTip = rdd.mapToPair(
+                row -> {
+                    OffsetDateTime odt = row._1();
+                    String dateHour = getDateHour(odt);
+
+                    Tuple2<String, Double> key = new Tuple2<>(dateHour, row._3());
+                    return new Tuple2<>(key, 1);
+                });
+        /*
+        for (Tuple2<Tuple2<Integer, Double>, Integer> s : rddAvgTip.take(10)) {
+            System.out.println(s);
+        }
+
+         */
+
+        // (ora, pagamento), numero occorrenze) --> ((1,1.0),45)
+        System.out.println( " ----- reduced ------ ");
+
+        JavaPairRDD<Tuple2<String, Double>, Integer> reduced = rddAvgTip.reduceByKey(
+                (a, b) -> a + b
+        );
+        /*
+        for (Tuple2<Tuple2<Integer, Double>, Integer> s : reduced.take(10)) {
+            System.out.println(s);
+        }
+
+         */
+
+
+        System.out.println( " ----- boh ------ ");
+        // (ora, numero occorrenze), pagamento --> ((1,45), 1.0)
+        JavaPairRDD<Tuple2<String, Integer>, Double> boh = reduced.mapToPair(row ->
+                new Tuple2<>(new Tuple2(row._1._1, row._2), row._1._2));
+
+        for (Tuple2<Tuple2<String, Integer>, Double> s : boh.collect()) {
+            System.out.println(s);
+        }
+
+        JavaPairRDD<Tuple2<String, Integer>, Double> prova2 = boh.sortByKey(new Tuple2Comparator());
+
+        System.out.println(" ---- prova2 -----");
+        for (Tuple2<Tuple2<String, Integer>, Double> s : prova2.collect())
+        {
+            System.out.println(s);
+        }
+        JavaPairRDD<String, Iterable<Tuple2<Integer, Double>>> prova5 = prova2.mapToPair(x -> new Tuple2<>(x._1._1, new Tuple2<>(x._1._2, x._2))).groupByKey();
+
+        System.out.println(" ---- prova5 -----");
+        for (Tuple2<String, Iterable<Tuple2<Integer, Double>>> s : prova5.collect())
+        {
+            System.out.println(s);
+        }
+
+    }
+
+
     // VEHHIO PRIMA DELLA TRACCIA NUOVA
     private static JavaPairRDD<Integer, Integer> CalculateDistribution(JavaRDD<Tuple3<LocalDateTime, Double, Double>> rdd) {
         System.out.println(" --------------- CalculateDistribution ----------------");

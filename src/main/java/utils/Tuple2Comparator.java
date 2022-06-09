@@ -6,6 +6,7 @@ import scala.Tuple2;
 import java.util.Comparator;
 
 public class Tuple2Comparator implements Comparator<Tuple2<String,Integer>>, Serializable {
+
     private static final long serialVersionUID = 1L;
     @Override
     public int compare(Tuple2<String, Integer> v1, Tuple2<String, Integer> v2) {

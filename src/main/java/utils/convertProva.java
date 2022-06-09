@@ -74,7 +74,8 @@ public class convertProva {
             System.out.println(s);
         }
 
-        JavaPairRDD<Tuple2<String,Integer>, Integer> prova3 = prova2.mapToPair(row -> new Tuple2<>(new Tuple2(row._1._1, row._2), row._1._2));
+        JavaPairRDD<Tuple2<String,Integer>, Integer> prova3 = prova2.mapToPair(row ->
+                new Tuple2<>(new Tuple2(row._1._1, row._2), row._1._2));
         System.out.println(" ---- prova3 -----");
         for (Tuple2<Tuple2<String, Integer>, Integer> s : prova3.collect())
         {

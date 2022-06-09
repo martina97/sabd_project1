@@ -18,7 +18,7 @@ public class Query1 {
     public static void query1Main(JavaRDD<String> rdd) {
     //public static void main(String[] args) {
 
-        JavaRDD<Tuple5<OffsetDateTime, Double, Double, Double, Double>> rddPreproc = QueriesPreprocessing.Query1PreprocessingCSV(rdd);
+        JavaRDD<Tuple5<LocalDateTime, Double, Double, Double, Double>> rddPreproc = QueriesPreprocessing.Query1Preprocessing(rdd);
         System.out.println("rddPreproc count === " + rddPreproc.count());
 
         // resultRDD : (2021-12, (mean, count))
@@ -64,12 +64,12 @@ public class Query1 {
 
     // PIU EFFICIENTE, CI METTE MENO
     // todo: vedere differenza di tempo tra questo metodo e l'altro
-    private static JavaPairRDD<String, Tuple2<Double, Long>> computeResults(JavaRDD<Tuple5<OffsetDateTime, Double, Double, Double, Double>> rdd) {
+    private static JavaPairRDD<String, Tuple2<Double, Long>> computeResults(JavaRDD<Tuple5<LocalDateTime, Double, Double, Double, Double>> rdd) {
         // voglio pair RDD con key = 2021-12, value = tip/(total amount - toll amount)
 
         JavaPairRDD<String, Double> rddAvgTip = rdd.mapToPair(
                 word -> {
-                    OffsetDateTime odt = word._1();
+                    LocalDateTime odt = word._1();
                     String key = odt.getYear() + "-" + odt.getMonthValue();
                     Double value = word._3() / (word._5()- word._4());
                     //Tuple2<Double,Integer> value = new Tuple2<>(word._3(),1);

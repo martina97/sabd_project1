@@ -531,7 +531,7 @@ public class Query2 {
     }
 
 
-    // VEHHIO PRIMA DELLA TRACCIA NUOVA
+    // VECCHIO PRIMA DELLA TRACCIA NUOVA
     private static JavaPairRDD<Integer, Integer> CalculateDistribution(JavaRDD<Tuple3<LocalDateTime, Double, Double>> rdd) {
         System.out.println(" --------------- CalculateDistribution ----------------");
 

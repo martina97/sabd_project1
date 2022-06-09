@@ -16,17 +16,19 @@ import java.util.Date;
 
 public class QueriesPreprocessing {
 
-/*
+
     public static String parquetFile1 = "hdfs://hdfs-namenode:9000/data/yellow_tripdata_2021-12.parquet";
     public static String parquetFile2 = "hdfs://hdfs-namenode:9000/data/yellow_tripdata_2022-01.parquet";
     public static String parquetFile3 = "hdfs://hdfs-namenode:9000/data/yellow_tripdata_2022-02.parquet";
 
- */
+/*
 
     public static String parquetFile1 = "/home/martina/Documents/data/yellow_tripdata_2021-12.parquet";
     public static String parquetFile2 = "/home/martina/Documents/data/yellow_tripdata_2022-01.parquet";
     public static String parquetFile3 = "/home/martina/Documents/data/yellow_tripdata_2022-02.parquet";
 
+
+ */
 
 
 

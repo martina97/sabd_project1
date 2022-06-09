@@ -11,7 +11,7 @@ import org.apache.spark.sql.types.StructType;
 import scala.Tuple4;
 import utils.QueriesPreprocessing;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class SqlQuery2 {
     public static void query2SQLMain(JavaRDD<String> rdd, SparkSession spark) {
 
 
-        JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rddPreproc = QueriesPreprocessing.Query2Preprocessing2(rdd).cache();
+        JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> rddPreproc = QueriesPreprocessing.Query2Preprocessing(rdd).cache();
         System.out.println("Query 2 Spark SQL");
         //calculateQuery2SQL(spark, rddPreproc);
 
@@ -215,7 +215,7 @@ public class SqlQuery2 {
         return result;
     }
 
-    private static Dataset<Row> createSchemaFromPreprocessedDataQ2(SparkSession spark, JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rdd) {
+    private static Dataset<Row> createSchemaFromPreprocessedDataQ2(SparkSession spark, JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> rdd) {
         // Generate the schema based on the string of schema
 
         List<StructField> fields = new ArrayList<>();

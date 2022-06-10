@@ -194,7 +194,7 @@ public class CsvWriter {
         //todo: mettere file su  hdfs
     }
 
-    public static void writeQuery2(JavaPairRDD<Integer, Tuple2<Tuple2<Integer, Tuple2<Double, Double>>, Tuple2<Double, Integer>>> resultQ2 ) {
+   public static void writeQuery2(JavaPairRDD<String, Tuple2<Tuple2<Iterable<Tuple2<Long, Double>>, Tuple2<Double, Double>>, Iterable<Tuple2<Integer, Double>>>> resultQ2 ) {
         try {
 
             // scrittura su hdfs
@@ -207,69 +207,52 @@ public class CsvWriter {
             fsDataOutputStream = hdfs.create(outputPathHDFS,true);
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fsDataOutputStream, StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
-            sb.append("Hour");
+            sb.append("YYYY-MM-DD-HH");
             sb.append(",");
-            sb.append("Distribution of the number of trips");
+            for(int i = 1; i<266;i++)  {
+                sb.append("perc_PU"+i);
+                sb.append(",");
+            }
+            sb.append("avg_tip");
             sb.append(",");
-            sb.append("Average tip");
+            sb.append("stddev_tip");
             sb.append(",");
-            sb.append("Standard deviation tip");
-            sb.append(",");
-            sb.append("Most popular payment method");
-            sb.append(",");
-            sb.append("Most popular payment method occurences");
+            sb.append("pref_payment");
             sb.append("\n");
 
 
-            // scrittura su csv locale
-            FileWriter csvWriter = new FileWriter(pathQuery2Results);
 
-            csvWriter.append("Hour");
-            csvWriter.append(",");
-            csvWriter.append("Distribution of the number of trips");
-            csvWriter.append(",");
-            csvWriter.append("Average tip");
-            csvWriter.append(",");
-            csvWriter.append("Standard deviation tip");
-            csvWriter.append(",");
-            csvWriter.append("Most popular payment method");
-            csvWriter.append(",");
-            csvWriter.append("Most popular payment method occurences");
-            csvWriter.append("\n");
 
-            for (Tuple2<Integer, Tuple2<Tuple2<Integer, Tuple2<Double, Double>>, Tuple2<Double, Integer>>> tuple : resultQ2.collect()) {
+            for (Tuple2<String, Tuple2<Tuple2<Iterable<Tuple2<Long, Double>>, Tuple2<Double, Double>>, Iterable<Tuple2<Integer, Double>>>> tuple : resultQ2.take(10)) {
 
-                csvWriter.append(String.valueOf(tuple._1()));
-                csvWriter.append(",");
-                csvWriter.append(String.valueOf(tuple._2()._1()._1()));
-                csvWriter.append(",");
-                csvWriter.append(String.valueOf(tuple._2()._1._2()._1()));
-                csvWriter.append(",");
-                csvWriter.append(String.valueOf(tuple._2()._1._2()._2()));
-                csvWriter.append(",");
-                csvWriter.append(String.valueOf(tuple._2()._2()._1()));
-                csvWriter.append(",");
-                csvWriter.append(String.valueOf(tuple._2()._2()._2()));
-                csvWriter.append("\n");
-
-                // hdfs
-                sb.append(tuple._1());
+                sb.append(tuple._1);
                 sb.append(",");
-                sb.append(tuple._2()._1()._1());
+                ArrayList<Tuple2<Long, Double>> list = Lists.newArrayList(tuple._2._1._1);
+                //System.out.println("list == " + list);
+                Map<Long, Double> resultMap = list.stream()
+                        .collect(Collectors.toMap(Tuple2::_1, Tuple2::_2));
+                System.out.println("resultMap == " + resultMap);
+                for(long j = 1; j<266;j++)  {
+                    System.out.println("j == " + j);
+                    System.out.println("resultMap.get(j) = " + resultMap.get(j));
+                    if (resultMap.get(j) == null) {
+                        sb.append(String.valueOf(0));
+                    } else {
+                        sb.append(String.valueOf(resultMap.get(j)));
+                    }
+                    sb.append(",");
+                }
+                sb.append(String.valueOf(tuple._2._1._2._1));
                 sb.append(",");
-                sb.append(tuple._2()._1._2()._1());
+                sb.append(String.valueOf(tuple._2._1._2._2));
                 sb.append(",");
-                sb.append(tuple._2()._1._2()._2());
-                sb.append(",");
-                sb.append(tuple._2()._2()._1());
-                sb.append(",");
-                sb.append(tuple._2()._2()._2());
+                sb.append(String.valueOf(Iterables.get(tuple._2._2,0)));
                 sb.append("\n");
+
             }
             bufferedWriter.write(sb.toString());
             bufferedWriter.close();
-            csvWriter.flush();
-            csvWriter.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }

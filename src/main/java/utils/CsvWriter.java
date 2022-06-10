@@ -276,7 +276,7 @@ public class CsvWriter {
 
     }
 
-    public static void writeQuery1HDFS_CSV(JavaPairRDD<String, Double> resultsRDD) {
+    public static void writeQuery1HDFS_CSV(JavaPairRDD<String, Tuple2<Double, Long>> resultsRDD) {
 
         try {
             // scrittura su hdfs
@@ -290,30 +290,39 @@ public class CsvWriter {
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fsDataOutputStream, StandardCharsets.UTF_8));
 
             StringBuilder sb = new StringBuilder();
-            sb.append("Month");
+            sb.append("YYYY-MM");
             sb.append(",");
 
-            sb.append("avg tip/(total amount - toll amount)");
+            sb.append("tip_percentage");
+            sb.append(",");
+
+            sb.append("trips_number");
             sb.append('\n');
 
 
             // scrittura su csv locale
             FileWriter csvWriter = new FileWriter(pathQuery1Results);
 
-            csvWriter.append("Month");
+            csvWriter.append("YYYY-MM");
             csvWriter.append(",");
-            csvWriter.append("avg tip/(total amount - toll amount)");
+            csvWriter.append("tip_percentage");
+            csvWriter.append(",");
+            csvWriter.append("trips_number");
             csvWriter.append("\n");
 
-            for (Tuple2<String, Double> tuple : resultsRDD.collect()) {
-                sb.append(tuple._1());
+            for (Tuple2<String, Tuple2<Double, Long>> tuple : resultsRDD.collect()) {
+                sb.append(tuple._1);
                 sb.append(",");
-                sb.append(tuple._2());
+                sb.append(tuple._2()._1);
+                sb.append(",");
+                sb.append(tuple._2()._2);
                 sb.append("\n");
 
                 csvWriter.append(tuple._1());
                 csvWriter.append(",");
-                csvWriter.append(Double.toString(tuple._2()));
+                csvWriter.append(Double.toString(tuple._2()._1));
+                csvWriter.append(",");
+                csvWriter.append(Double.toString(tuple._2()._2));
                 csvWriter.append("\n");
             }
 
@@ -326,25 +335,32 @@ public class CsvWriter {
         }
     }
 
-    public static void writeQuery1ResultsCSV(JavaPairRDD<String, Double> resultsRDD) {
+    public static void writeQuery1ResultsCSV(JavaPairRDD<String, Tuple2<Double, Long>> resultsRDD) {
         try {
+            // scrittura su csv locale
             FileWriter csvWriter = new FileWriter(pathQuery1Results);
-            csvWriter.append("Month");
+
+            csvWriter.append("YYYY-MM");
             csvWriter.append(",");
-            csvWriter.append("avg tip/(total amount - toll amount)");
+            csvWriter.append("tip_percentage");
+            csvWriter.append(",");
+            csvWriter.append("trips_number");
             csvWriter.append("\n");
 
-            for (Tuple2<String, Double> tuple : resultsRDD.collect()) {
+            for (Tuple2<String, Tuple2<Double, Long>> tuple : resultsRDD.collect()) {
+
+
                 csvWriter.append(tuple._1());
                 csvWriter.append(",");
-                csvWriter.append(Double.toString(tuple._2()));
+                csvWriter.append(Double.toString(tuple._2()._1));
+                csvWriter.append(",");
+                csvWriter.append(Double.toString(tuple._2()._2));
                 csvWriter.append("\n");
-
             }
             csvWriter.flush();
             csvWriter.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 

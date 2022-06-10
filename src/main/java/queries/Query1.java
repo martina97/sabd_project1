@@ -25,10 +25,12 @@ public class Query1 {
         JavaPairRDD<String, Tuple2<Double, Long>> resultRDD = computeResults(rddPreproc);
 	Instant end = Instant.now();
 	System.out.println("Durata query1 : " + Duration.between(start,end).toMillis());
+	
         for (Tuple2<String, Tuple2<Double, Long>> s : resultRDD.collect()) {
             System.out.println(s);
         }
-        //CsvWriter.writeQuery1ResultsCSV(resultRDD);
+	
+        CsvWriter.writeQuery1ResultsCSV(resultRDD);
         //CsvWriter.writeQuery1HDFS_CSV(resultRDD);
 
     }

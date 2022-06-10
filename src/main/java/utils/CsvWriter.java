@@ -300,16 +300,6 @@ public class CsvWriter {
             sb.append('\n');
 
 
-            // scrittura su csv locale
-            FileWriter csvWriter = new FileWriter("./"+pathQuery1Results);
-
-            csvWriter.append("YYYY-MM");
-            csvWriter.append(",");
-            csvWriter.append("tip_percentage");
-            csvWriter.append(",");
-            csvWriter.append("trips_number");
-            csvWriter.append("\n");
-
             for (Tuple2<String, Tuple2<Double, Long>> tuple : resultsRDD.collect()) {
                 sb.append(tuple._1);
                 sb.append(",");
@@ -318,19 +308,11 @@ public class CsvWriter {
                 sb.append(tuple._2()._2);
                 sb.append("\n");
 
-                csvWriter.append(tuple._1());
-                csvWriter.append(",");
-                csvWriter.append(Double.toString(tuple._2()._1));
-                csvWriter.append(",");
-                csvWriter.append(Double.toString(tuple._2()._2));
-                csvWriter.append("\n");
             }
 
             bufferedWriter.write(sb.toString());
             bufferedWriter.close();
-            csvWriter.flush();
-            csvWriter.close();
-        } catch (IOException e) {
+          } catch (IOException e) {
             e.printStackTrace();
         }
     }

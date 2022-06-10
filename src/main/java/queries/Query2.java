@@ -108,7 +108,7 @@ public class Query2 {
             System.out.println(s);
         }
 
-        CsvWriter.writeQuery2CSV(resultQ2);
+        CsvWriter.writeQuery2(resultQ2);
 
 
 

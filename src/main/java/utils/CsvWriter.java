@@ -301,7 +301,7 @@ public class CsvWriter {
 
 
             // scrittura su csv locale
-            FileWriter csvWriter = new FileWriter(pathQuery1Results);
+            FileWriter csvWriter = new FileWriter("./"+pathQuery1Results);
 
             csvWriter.append("YYYY-MM");
             csvWriter.append(",");

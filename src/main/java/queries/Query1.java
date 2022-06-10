@@ -30,8 +30,8 @@ public class Query1 {
             System.out.println(s);
         }
 	
-        CsvWriter.writeQuery1ResultsCSV(resultRDD);
-        //CsvWriter.writeQuery1HDFS_CSV(resultRDD);
+        //CsvWriter.writeQuery1ResultsCSV(resultRDD);
+        CsvWriter.writeQuery1HDFS_CSV(resultRDD);
 
     }
 

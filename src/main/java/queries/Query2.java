@@ -1,12 +1,14 @@
 package queries;
 
 import avro.shaded.com.google.common.collect.Iterables;
+import avro.shaded.com.google.common.collect.Lists;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.util.StatCounter;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple4;
+import utils.CsvWriter;
 import utils.QueriesPreprocessing;
 import utils.Tuple2Comparator;
 
@@ -15,7 +17,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static utils.convertProva.getMaxOccurence2;
 
@@ -25,66 +29,90 @@ public class Query2 {
     public static void query2Main(JavaRDD<String> rdd) {
         //public static void main(String[] args) {
         JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> rdd2 = QueriesPreprocessing.Query2Preprocessing(rdd).cache();
-        //JavaRDD<Tuple3<OffsetDateTime, Double, Double>> rdd2 = QueriesPreprocessing.preprocData(rdd);
+
         //System.out.println("dopo preproc == " + rdd2.count());
 
 
         // --------  Calcolo Distribution of the number of trips distrNumbTripPerH  --------
-        //JavaPairRDD<Integer, Integer> distrNumbTripPerH = CalculateDistribution(rdd2).sortByKey();
 
-        /*
+
+
         JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> distrNumbTripPerH = CalculateDistribution4(rdd2);
         //todo: ordino la lista dei valori quando scrivo il csv !!!!!
         //todo: posso creare una mappa in cui la chiave e' la zona e id e' percentuale?
+
+/*
         System.out.println( "------- distrNumbTripPerH ------- ");
-        for (Tuple2<String, Iterable<Tuple2<Long, Double>>> s : distrNumbTripPerH.take(10)) {
+        for (Tuple2<String, Iterable<Tuple2<Long, Double>>> s : distrNumbTripPerH.sortByKey().take(1)) {
             System.out.println(s);
+            Iterable iterable = s._2;
+            ArrayList<Tuple2<Long, Double>> list = Lists.newArrayList(iterable);
+            Map<Long, Double> resultMap = list.stream()
+                    .collect(Collectors.toMap(Tuple2::_1, Tuple2::_2));
+            System.out.println("resultMap == " + resultMap);
+            System.out.println("prova --- " + resultMap.get(161));
+            System.out.println(resultMap.containsKey(Long.valueOf(164)));
+            for(long i=1; i<266; i++) {
+                System.out.println("resultMap.get(i) : " + resultMap.get(i));
+
+            }
         }
+
+ */
+
+
+
+
+
 
 
         //--------   Calcolo average tip and its standard deviation --------
 
-       JavaPairRDD<String, Tuple2<Double, Double>> avgAndStDevTip2 = CalculateAvgStDevTip2(rdd2);
+      JavaPairRDD<String, Tuple2<Double, Double>> avgAndStDevTip2 = CalculateAvgStDevTip2(rdd2);
+        /*
         System.out.println( "------- avgAndStDevTip ------- ");
-        for (Tuple2<String, Tuple2<Double, Double>> s : avgAndStDevTip2.take(10)) {
+        for (Tuple2<String, Tuple2<Double, Double>> s : avgAndStDevTip2.sortByKey().take(10)) {
             System.out.println(s);
         }
 
-
          */
-
 
 
 
         // -------- Calcolo the most popular payment method --------
 
       // JavaPairRDD<String, Tuple2<Double, Integer>> mostPopularPayment = CalculateTopPayment3(rdd2);
-        JavaPairRDD<String, Iterable<Tuple2<Integer, Double>>> mostPopularPayment = CalculateTopPaymentComparator(rdd2);
+      JavaPairRDD<String, Iterable<Tuple2<Integer, Double>>> mostPopularPayment = CalculateTopPaymentComparator(rdd2);
+        /*
         System.out.println( "------- mostPopularPayment ------- ");
+
 
 
         for (Tuple2<String, Iterable<Tuple2<Integer, Double>>> s : mostPopularPayment.sortByKey().take(10)) {
             System.out.println(s);
         }
 
+         */
 
 
 
 
-        /*
-        JavaPairRDD<Integer, Tuple2<Tuple2<Integer, Tuple2<Double, Double>>, Tuple2<Double, Integer>>> resultQ2 = distrNumbTripPerH
+
+        JavaPairRDD<String, Tuple2<Tuple2<Iterable<Tuple2<Long, Double>>, Tuple2<Double, Double>>, Iterable<Tuple2<Integer, Double>>>> resultQ2 = distrNumbTripPerH
                 .join(avgAndStDevTip2)
                 .join(mostPopularPayment)
                 .sortByKey();
 
         System.out.println(" \n\n------ RESULT Q2 ------- ");
-        for (Tuple2<Integer, Tuple2<Tuple2<Integer, Tuple2<Double, Double>>, Tuple2<Double, Integer>>> s : resultQ2.collect()){
+        for (Tuple2<String, Tuple2<Tuple2<Iterable<Tuple2<Long, Double>>, Tuple2<Double, Double>>, Iterable<Tuple2<Integer, Double>>>> s : resultQ2.take(10)){
             System.out.println(s);
         }
 
-        CsvWriter.writeQuery2(resultQ2);
+        CsvWriter.writeQuery2CSV(resultQ2);
 
-         */
+
+
+
     }
 
     private static JavaPairRDD<String, Iterable<Tuple2<Long, Integer>>> CalculateDistribution3(JavaRDD<Tuple4<OffsetDateTime, Long, Double, Double>> rdd) {
@@ -232,7 +260,7 @@ public class Query2 {
     }
 
 
-    private static JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> CalculateDistribution4(JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> rdd) {
+    public static JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> CalculateDistribution4(JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> rdd) {
         System.out.println(" --------------- CalculateDistribution ----------------");
 
         JavaPairRDD<String, Tuple2<Long, Integer>> prova = rdd.mapToPair(
@@ -303,6 +331,8 @@ public class Query2 {
         }
 
          */
+
+
         return prova5;
     }
 
@@ -660,7 +690,7 @@ public class Query2 {
         if (monthInt < 10) {
             month = "0"+monthInt;
         }
-        String key = odt.getYear() + "-" + month + "-" + day + " " + hour;
+        String key = odt.getYear() + "-" + month + "-" + day + "-" + hour;
         return key;
     }
 

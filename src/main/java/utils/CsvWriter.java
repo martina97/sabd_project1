@@ -2,6 +2,8 @@ package utils;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -11,6 +13,9 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -222,26 +227,53 @@ public class CsvWriter {
 
 
 
+	    FileWriter csvWriter = new FileWriter("/docker/node_volume/resultsQuery2.csv");
+	
 
-            for (Tuple2<String, Tuple2<Tuple2<Iterable<Tuple2<Long, Double>>, Tuple2<Double, Double>>, Iterable<Tuple2<Integer, Double>>>> tuple : resultQ2.take(10)) {
+	csvWriter.append("YYYY-MM-DD-HH");
+            csvWriter.append(",");
+            for(int i = 1; i<266;i++)  {
+                csvWriter.append("perc_PU"+i);
+                csvWriter.append(",");
+            }
+            csvWriter.append("avg_tip");
+            csvWriter.append(",");
+             csvWriter.append("stddev_tip");
+             csvWriter.append(",");
+             csvWriter.append("pref_payment");
+             csvWriter.append("\n");
+
+
+
+
+
+            for (Tuple2<String, Tuple2<Tuple2<Iterable<Tuple2<Long, Double>>, Tuple2<Double, Double>>, Iterable<Tuple2<Integer, Double>>>> tuple : resultQ2.collect()) {
 
                 sb.append(tuple._1);
                 sb.append(",");
-                ArrayList<Tuple2<Long, Double>> list = Lists.newArrayList(tuple._2._1._1);
+         csvWriter.append(tuple._1);
+                csvWriter.append(",");
+		ArrayList<Tuple2<Long, Double>> list = Lists.newArrayList(tuple._2._1._1);
                 //System.out.println("list == " + list);
                 Map<Long, Double> resultMap = list.stream()
                         .collect(Collectors.toMap(Tuple2::_1, Tuple2::_2));
-                System.out.println("resultMap == " + resultMap);
+                //System.out.println("resultMap == " + resultMap);
                 for(long j = 1; j<266;j++)  {
-                    System.out.println("j == " + j);
-                    System.out.println("resultMap.get(j) = " + resultMap.get(j));
+                //    System.out.println("j == " + j);
+                 //   System.out.println("resultMap.get(j) = " + resultMap.get(j));
                     if (resultMap.get(j) == null) {
                         sb.append(String.valueOf(0));
-                    } else {
+                  csvWriter.append(String.valueOf(0));
+
+		    } else {
                         sb.append(String.valueOf(resultMap.get(j)));
-                    }
+     			  csvWriter.append(String.valueOf(resultMap.get(j)));
+
+     		    }
                     sb.append(",");
-                }
+                 csvWriter.append(",");
+
+	       	}
                 sb.append(String.valueOf(tuple._2._1._2._1));
                 sb.append(",");
                 sb.append(String.valueOf(tuple._2._1._2._2));
@@ -249,7 +281,16 @@ public class CsvWriter {
                 sb.append(String.valueOf(Iterables.get(tuple._2._2,0)));
                 sb.append("\n");
 
-            }
+             	csvWriter.append(String.valueOf(tuple._2._1._2._1));
+                csvWriter.append(",");
+                csvWriter.append(String.valueOf(tuple._2._1._2._2));
+                csvWriter.append(",");
+                csvWriter.append(String.valueOf(Iterables.get(tuple._2._2,0)));
+                csvWriter.append("\n");
+
+	    }
+	      csvWriter.flush();
+            csvWriter.close();
             bufferedWriter.write(sb.toString());
             bufferedWriter.close();
 

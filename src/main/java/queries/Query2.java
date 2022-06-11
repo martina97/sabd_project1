@@ -1,7 +1,7 @@
 package queries;
 
-import avro.shaded.com.google.common.collect.Iterables;
-import avro.shaded.com.google.common.collect.Lists;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.util.StatCounter;
@@ -108,7 +108,7 @@ public class Query2 {
             System.out.println(s);
         }
 
-        CsvWriter.writeQuery2(resultQ2);
+      CsvWriter.writeQuery2(resultQ2);
 
 
 
@@ -538,7 +538,10 @@ public class Query2 {
             System.out.println(s);
         }
 
-         */
+ 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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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
+        }
+
+        */
 
 
         //System.out.println( " ----- boh ------ ");
@@ -564,14 +567,14 @@ public class Query2 {
         JavaPairRDD<String, Iterable<Tuple2<Integer, Double>>> prova5 = prova2
                 .mapToPair(x -> new Tuple2<>(x._1._1, new Tuple2<>(x._1._2, x._2)))
                 .groupByKey();
-/*
+
         System.out.println(" ---- prova5 -----");
-        for (Tuple2<String, Iterable<Tuple2<Integer, Double>>> s : prova5.collect())
+        for (Tuple2<String, Iterable<Tuple2<Integer, Double>>> s : prova5.take(10))
         {
             System.out.println(s);
         }
 
- */
+/*
         JavaPairRDD<String, Tuple2<Integer, Double>> prova6 = prova5.mapToPair(x -> {
             Iterable<Tuple2<Integer, Double>> iterable = x._2;
             System.out.println("iterable == " + iterable);
@@ -587,7 +590,8 @@ public class Query2 {
         {
             System.out.println(s);
         }
-        return prova5;
+       */
+       	return prova5;
 
     }
 

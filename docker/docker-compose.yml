@@ -19,7 +19,7 @@ services:
       - '4040:4040' # Web UI
     volumes:
       - ../target:/queries
-
+      - ./docker/volumes:/docker/node_volume/
   spark-worker:
     image: docker.io/bitnami/spark:3
     environment:

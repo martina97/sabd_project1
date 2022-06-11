@@ -16,7 +16,7 @@ public class StartQueries {
         System.out.println("----- start queries ----");
 
         SparkSession spark = SparkSession.builder()
-                .master("spark://spark:7077")
+                .master("local")
                 .appName("Query 1")
                 .getOrCreate();
 
@@ -32,11 +32,11 @@ public class StartQueries {
          */
 
 
-       System.out.println("\n\n ------ Query 1 --------\n\n ");
-       Query1.query1Main(rdd);
+       //System.out.println("\n\n ------ Query 1 --------\n\n ");
+       //Query1.query1Main(rdd);
 
-       // System.out.println("\n\n ------ Query 2 --------\n\n ");
-       // Query2.query2Main(rdd);
+        System.out.println("\n\n ------ Query 2 --------\n\n ");
+        Query2.query2Main(rdd);
 
        // System.out.println("\n\n ------ Query 3 --------\n\n ");
         //Query3.query3Main(rdd);

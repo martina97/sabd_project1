@@ -27,7 +27,7 @@ public class SqlQuery1 {
     public static void query1SQLMain(JavaRDD<String> rdd, SparkSession spark) {
 
 
-        JavaRDD<Tuple5<OffsetDateTime, Double, Double, Double, Double>> rddPreproc = QueriesPreprocessing.Query1PreprocessingCSV(rdd);
+        JavaRDD<Tuple5<LocalDateTime, Double, Double, Double, Double>> rddPreproc = QueriesPreprocessing.Query1Preprocessing(rdd);
         System.out.println("Query 1 Spark SQL");
 
         calculateQuery1SQL(spark, rddPreproc);
@@ -36,7 +36,7 @@ public class SqlQuery1 {
 
     }
 
-    private static void calculateQuery1SQL(SparkSession spark, JavaRDD<Tuple5<OffsetDateTime, Double, Double, Double, Double>> rdd) {
+    private static void calculateQuery1SQL(SparkSession spark, JavaRDD<Tuple5<LocalDateTime, Double, Double, Double, Double>> rdd) {
         // Register the DataFrame as a SQL temporary view named "query1"
         //creo dataset partendo dai dati che sono coppie javaRDD
         Dataset<Row> df = createSchemaFromPreprocessedData(spark, rdd);
@@ -46,17 +46,14 @@ public class SqlQuery1 {
         df.createOrReplaceTempView("query1");
 
         Dataset<Row> result = spark.sql(
-                "SELECT tpep_pickup_datetime, AVG(tip_amount/(total_amount-tolls_amount)) AS avg FROM query1  " +
+                "SELECT tpep_pickup_datetime, AVG(tip_amount/(total_amount-tolls_amount)) AS tip_percentage, count(*) as trips_number FROM query1  " +
                         "GROUP BY tpep_pickup_datetime");
         result.createOrReplaceTempView("temp");
         // il risultato di questa query lo chiamo "temp", e da questo momento posso
         // utilizzarlo in un'altra funzione
         result.show();
 
-        for(Iterator<Row> iter = result.toLocalIterator(); iter.hasNext();) {
-            String[] item = ((iter.next()).toString().split(","));
-            System.out.println(" item ===  " + item);
-        }
+        
        //CsvWriter.writeQuery1SQL(result);
         //result.write().format("csv").save("./results/query1SQL.csv");
        /*
@@ -70,7 +67,7 @@ public class SqlQuery1 {
     }
 
     private static Dataset<Row> createSchemaFromPreprocessedData(SparkSession spark,
-                                                                 JavaRDD<Tuple5<OffsetDateTime, Double, Double, Double, Double>> values){
+                                                                 JavaRDD<Tuple5<LocalDateTime, Double, Double, Double, Double>> values){
 
         // Generate the schema based on the string of schema
 
@@ -84,8 +81,9 @@ public class SqlQuery1 {
 
         // Convert records of the RDD to Rows
         JavaRDD<Row> rowRDD = values.map(val -> {
-            OffsetDateTime date = val._1();
+            LocalDateTime date = val._1();
             String month = date.getYear()+ "-"+date.getMonthValue();
+
             return RowFactory.create(month, val._2(), val._3(),val._4(), val._5());
         });
 

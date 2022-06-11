@@ -372,27 +372,60 @@ public class CsvWriter {
 
     public static void writeQuery1SQL(Dataset<Row> result) {
         try {
-            FileWriter csvWriter = new FileWriter(pathQuery1SQLResults);
-            csvWriter.append("Month");
+		 // scrittura su hdfs
+            Configuration configuration = new Configuration();
+            configuration.set("fs.defaultFS","hdfs://hdfs-namenode:9000");
+            FileSystem hdfs = null;
+            hdfs = FileSystem.get(configuration);
+            Path outputPathHDFS = new Path("hdfs://hdfs-namenode:9000/"+ pathQuery1SQLResults);
+            FSDataOutputStream fsDataOutputStream = null;
+            fsDataOutputStream = hdfs.create(outputPathHDFS,true);
+            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fsDataOutputStream, StandardCharsets.UTF_8));
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("YYYY-MM");
+            sb.append(",");
+
+            sb.append("tip_percentage");
+            sb.append(",");
+
+            sb.append("trips_number");
+            sb.append('\n');
+
+
+
+
+            FileWriter csvWriter = new FileWriter("/docker/node_volume/resultsQuery1SQL.csv");
+            csvWriter.append("YYYY-MM");
             csvWriter.append(",");
-            csvWriter.append("avg tip/(total amount - toll amount)");
-            csvWriter.append("\n");
-            result.foreach(
-                    (ForeachFunction<Row>) row -> {
-                        Object row0 = row.get(0);
-                        Object row1 = row.get(1);
-                        row0.toString();
 
-                        csvWriter.append(row0.toString());
-                        csvWriter.append(",");
-                        csvWriter.append(row1.toString());
-                        csvWriter.append("\n");
+            csvWriter.append("tip_percentage");
+            csvWriter.append(",");
+
+            csvWriter.append("trips_number");
+            csvWriter.append('\n');
 
 
-                    }
-            );
+            for (Row row : result.collectAsList()) {
+	   	sb.append(row.getString(0));
+                sb.append(",");
+                sb.append(row.getDouble(1));
+                sb.append(",");
+                sb.append(row.getLong(2));
+                sb.append("/n");
+
+                csvWriter.append(row.getString(0));
+                csvWriter.append(",");
+                csvWriter.append(String.valueOf(row.getDouble(1)));
+                csvWriter.append(",");
+                csvWriter.append(String.valueOf(row.getLong(2)));
+                csvWriter.append("/n");
+	    
+	    }
             csvWriter.flush();
             csvWriter.close();
+	    bufferedWriter.write(sb.toString());
+            bufferedWriter.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

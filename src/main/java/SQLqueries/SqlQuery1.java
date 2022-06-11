@@ -54,7 +54,7 @@ public class SqlQuery1 {
         result.show();
 
         
-       //CsvWriter.writeQuery1SQL(result);
+	CsvWriter.writeQuery1SQL(result);
         //result.write().format("csv").save("./results/query1SQL.csv");
        /*
         result.foreach(

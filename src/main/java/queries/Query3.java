@@ -164,7 +164,20 @@ public class Query3 {
 
         JavaPairRDD<Tuple2<String, Long>, StatCounter> prova = rddPreproc.mapToPair(
                         word -> {
-                            String date = word._1().getYear() + "-" + word._1().getMonthValue() + "-" + word._1().getDayOfMonth();
+				
+				int day = word._1().getDayOfMonth();
+				String dayStr = String.valueOf(day);
+				if (day < 10) {
+					dayStr = "0"+day;
+				}
+
+				int month =  word._1().getMonthValue();
+			       String monthStr = String.valueOf(month);
+		      		
+			       if (month < 10) {
+         			   monthStr = "0"+month;
+        			}	
+                            String date = word._1().getYear() + "-" + monthStr + "-" + dayStr;
                             Tuple2<String, Long> key = new Tuple2<>(date, word._3());
                             Double value = (word._4());
                             return new Tuple2<>(key, value);
@@ -179,10 +192,11 @@ public class Query3 {
 
                  */
 
+		/*
         System.out.println(" \n---- prova -----");
         for (Tuple2<Tuple2<String, Long>, StatCounter> s : prova.collect()) {
             System.out.println(s);
-        }
+        }*/
 /*
         
         // (giorno, (occorrenze, media fare amount, stdev fare amount)
@@ -212,15 +226,29 @@ public class Query3 {
         System.out.println(" ----------------------- NUM MEDIO PASSEGGERI ---------------------- ");
         JavaPairRDD<Tuple2<String, Long>, Double> rddPassenger = rddPreproc.mapToPair(
                 word -> {
-                    String date = word._1().getYear() + "-" + word._1().getMonthValue() + "-" + word._1().getDayOfMonth();
+			  int day = word._1().getDayOfMonth();
+                                String dayStr = String.valueOf(day);
+                                if (day < 10) {
+                                        dayStr = "0"+day;
+                                }
+
+                                int month =  word._1().getMonthValue();
+                               String monthStr = String.valueOf(month);
+
+                               if (month < 10) {
+                                   monthStr = "0"+month;
+                                }
+                            String date = word._1().getYear() + "-" + monthStr + "-" + dayStr;
+
+                    //String date = word._1().getYear() + "-" + word._1().getMonthValue() + "-" + word._1().getDayOfMonth();
                     Tuple2<String, Long> key = new Tuple2<>(date, word._3());   //chiave: (giorno, DOLocationID)
                     Double value = (word._2()); // valore: passenger_count
                     return new Tuple2<>(key, value);
                 });
-        System.out.println(" ---- rddPassenger ------ ");
+        /*System.out.println(" ---- rddPassenger ------ ");
         for (Tuple2<Tuple2<String, Long>, Double> s : rddPassenger.collect()) {
             System.out.println(s);
-        }
+        }*/
 
 
         JavaPairRDD<Tuple2<String, Long>, Double> avgPax = rddPassenger
@@ -229,11 +257,11 @@ public class Query3 {
                         StatCounter::merge,
                         StatCounter::merge)
                 .mapToPair(x -> new Tuple2<>(x._1, x._2.mean()));
-        System.out.println(" ---- avgPax ------ ");
+        /*System.out.println(" ---- avgPax ------ ");
         for (Tuple2<Tuple2<String, Long>, Double> s : avgPax.collect()) {
             System.out.println(s);
         }
-
+*/
         // (giorno, (occorrenze, media fare amount, stdev fare amount)
         JavaPairRDD<Tuple2<String, Long>, Tuple3<Long, Double, Double>> provaa = prova
                 .mapToPair(x -> {
@@ -243,18 +271,18 @@ public class Query3 {
                     Tuple3<Long, Double, Double> value = new Tuple3<>(x._2.count(), x._2.mean(), x._2.stdev());
                     return new Tuple2<>(key, value);
                 });
-        System.out.println(" ---- provaa ------ ");
+      /*  System.out.println(" ---- provaa ------ ");
         for (Tuple2<Tuple2<String, Long>, Tuple3<Long, Double, Double>> s : provaa.collect()) {
             System.out.println(s);
         }
-
+*/
         // ((2021-12-1,236),((2,21.25,3.25),1.0)) : ((giorno,zona),((occorrenze,media fare_amount,std fare_amount),num medio passeggeri))
         JavaPairRDD<Tuple2<String, Long>, Tuple2<Tuple3<Long, Double, Double>, Double>> rddJoin = provaa.join(avgPax);
-        System.out.println(" ---- rddJoin ------ ");
+     /*   System.out.println(" ---- rddJoin ------ ");
         for (Tuple2<Tuple2<String, Long>, Tuple2<Tuple3<Long, Double, Double>, Double>> s : rddJoin.collect()) {
             System.out.println(s);
         }
-
+*/
         // ora come chiave metto (giorno, occorrenze) in modo da poter ordinare dall'occorrenza maggiore
         JavaPairRDD<Tuple2<String, Integer>, Tuple4> rddJoinSorted = rddJoin.mapToPair(x ->
                 {
@@ -264,10 +292,11 @@ public class Query3 {
                 }
         ).sortByKey(new Tuple2Comparator());
 
-        System.out.println(" ---- rddJoinSorted ------ ");
+  /*      System.out.println(" ---- rddJoinSorted ------ ");
         for (Tuple2<Tuple2<String, Integer>, Tuple4> s : rddJoinSorted.collect()) {
             System.out.println(s);
-        }
+        }*/
+
         JavaPairRDD<String, ArrayList<Tuple4>> finale = rddJoinSorted
                 .mapToPair(x -> new Tuple2<>(x._1._1, x._2))
                 .groupByKey()
@@ -277,7 +306,7 @@ public class Query3 {
                     Iterable<Tuple4> top5Iterable = Iterables.limit(x._2, 5);
                     //System.out.println("provaaa = " + provaa);
                     return new Tuple2<>(x._1, Lists.newArrayList(top5Iterable));
-                });
+                }).sortByKey();
                 
         /*
         JavaPairRDD<String, ArrayList<Tuple4>> finale = rddJoinSorted.groupByKey()
@@ -292,7 +321,7 @@ public class Query3 {
          */
 
         System.out.println(" ---- finale ------ ");
-        for (Tuple2<String, ArrayList<Tuple4>> s : finale.collect()) {
+        for (Tuple2<String, ArrayList<Tuple4>> s : finale.take(10)) {
             System.out.println(s);
         }
     }

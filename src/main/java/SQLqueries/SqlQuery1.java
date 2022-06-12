@@ -15,6 +15,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import utils.CsvWriter;
 
 public class SqlQuery1 {
     //private static String finalPath = "prova_2021_12.csv";

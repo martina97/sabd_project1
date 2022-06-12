@@ -308,9 +308,10 @@ public class QueriesPreprocessing {
                             int month = tpep_pickup_datetime.getMonthValue();
                             int hour = tpep_pickup_datetime.getHour();
                             Double passenger_count;
-                            System.out.println(" myFields[13] ==  " + myFields[13]);
-                            if (myFields[13] == null) {
-                                passenger_count = Double.NaN;
+                            //System.out.println(" myFields[13] ==  " + myFields[13]);
+                            if (myFields[3].equals(null) || myFields[3].equals("null")) {
+                               //System.out.println("NaN!!!!!!");
+			       passenger_count = Double.NaN;
                             } else {
                                 passenger_count = Double.valueOf(myFields[3]);
                             }

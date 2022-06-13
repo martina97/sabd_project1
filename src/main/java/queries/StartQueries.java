@@ -16,8 +16,8 @@ public class StartQueries {
         System.out.println("----- start queries ----");
 
         SparkSession spark = SparkSession.builder()
-                .master("local")
-                .appName("Query 1")
+                .master("spark://spark:7077")
+                .appName("sabd_project1")
                 .getOrCreate();
 
         spark.sparkContext().setLogLevel("ERROR");
@@ -32,8 +32,8 @@ public class StartQueries {
          */
 
 
-       //System.out.println("\n\n ------ Query 1 --------\n\n ");
-       //Query1.query1Main(rdd);
+       System.out.println("\n\n ------ Query 1 --------\n\n ");
+       Query1.query1Main(rdd);
 
        // System.out.println("\n\n ------ Query 2 --------\n\n ");
         //Query2.query2Main(rdd);

@@ -32,21 +32,14 @@ public class QueriesPreprocessing {
 
     public static JavaRDD<String> importParquet(SparkSession spark) {
         Dataset<Row> df = spark.read().parquet(parquetFile1);
-        JavaRDD<String> rdd1 = df.toJavaRDD().map(row -> row.mkString(","));
-        System.out.println(df.count());
         Dataset<Row> df2 = spark.read().parquet(parquetFile2);
-        JavaRDD<String> rdd2 = df2.toJavaRDD().map(row -> row.mkString(","));
-        System.out.println(df2.count());
-
         Dataset<Row> df3 = spark.read().parquet(parquetFile3);
-        JavaRDD<String> rdd3 = df3.toJavaRDD().map(row -> row.mkString(","));
-        System.out.println(df3.count());
+
         Dataset<Row> dfRes = df.union(df2).union(df3);
-        System.out.println("union dataset == " + df.union(df2).union(df3).count());
-        System.out.println("dfRes == " + dfRes.count());
+
         JavaRDD<String> rddRes = dfRes.toJavaRDD().map(row -> row.mkString(","));
-        System.out.println("rddRes == " + rddRes.count() );
-        return rdd1.union(rdd2).union(rdd3);
+
+        return rddRes;
 
     }
 

@@ -46,7 +46,7 @@ public class StartQueries {
 
         //System.out.println("\n\n ------ Query 2 SQL--------\n\n ");
         //SqlQuery2.query2SQLMain(rdd, spark);
-       //Thread.sleep(86400000); 
+       Thread.sleep(86400000);
        spark.stop();
 
     }

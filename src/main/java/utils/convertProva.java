@@ -1,17 +1,12 @@
 package utils;
 
 import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.SparkSession;
-import scala.Array;
 import scala.Tuple2;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -299,6 +294,22 @@ public class convertProva {
         }
 
         return maxTuple;
+    }
+
+    public static String covertDateToDayStr(LocalDateTime localDateTime) {
+        int day = localDateTime.getDayOfMonth();
+        String dayStr = String.valueOf(day);
+        if (day < 10) {
+            dayStr = "0"+day;
+        }
+
+        int month =  localDateTime.getMonthValue();
+        String monthStr = String.valueOf(month);
+
+        if (month < 10) {
+            monthStr = "0"+month;
+        }
+        return localDateTime.getYear() + "-" + monthStr + "-" + dayStr;
     }
 
 

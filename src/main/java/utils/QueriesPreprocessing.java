@@ -171,14 +171,10 @@ public class QueriesPreprocessing {
 
   
     public static JavaRDD<Tuple4<LocalDateTime, Double, Long, Double>> Query3Preprocessing(JavaRDD<String> dataset) {
-        // remove header
-        // todo: con i file parquet non si copia l'header, quindi non devo toglierlo !!
 
         return dataset.filter(x ->  !(x.contains("NaN") & !(x.contains(",,")))).map(
-                        // return dataset.filter(x -> !(x.contains("NaN"))).map(
                         row -> {
                             String[] myFields = row.split(",");
-
 
                             Date temp = new SimpleDateFormat(pattern).parse(myFields[1]);
                             LocalDateTime tpep_pickup_datetime = temp.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();

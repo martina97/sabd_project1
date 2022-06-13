@@ -33,20 +33,20 @@ public class StartQueries {
 
 
        //System.out.println("\n\n ------ Query 1 --------\n\n ");
-      // Query1.query1Main(rdd);
+       Query1.query1Main(rdd);
 
-        System.out.println("\n\n ------ Query 2 --------\n\n ");
+        //System.out.println("\n\n ------ Query 2 --------\n\n ");
         Query2.query2Main(rdd);
 
        // System.out.println("\n\n ------ Query 3 --------\n\n ");
-        //Query3.query3Main(rdd);
+        Query3.query3Main(rdd);
 
         //System.out.println("\n\n ------ Query 1 SQL--------\n\n ");
-        //SqlQuery1.query1SQLMain(rdd, spark);
+        SqlQuery1.query1SQLMain(rdd, spark);
 
         //System.out.println("\n\n ------ Query 2 SQL--------\n\n ");
         //SqlQuery2.query2SQLMain(rdd, spark);
-       Thread.sleep(86400000);
+       //Thread.sleep(86400000);
        spark.stop();
 
     }

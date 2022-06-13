@@ -15,6 +15,8 @@ import utils.Tuple2Comparator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ public class Query2 {
         // (tpep_pickup_datetime,PULocationID,payment_type,tip_amount)
         JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> rdd2 = QueriesPreprocessing.Query2Preprocessing(rdd).cache();
 
+        Instant start = Instant.now();
 
         // ----- Calculate the percentage distribution of the number of trips with respect to the starting areas for each hour ------------
         JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> distrNumbTripPerH = CalculateDistribution(rdd2);
@@ -50,6 +53,10 @@ public class Query2 {
                 .join(avgAndStDevTip2)
                 .join(mostPopularPayment)
                 .sortByKey();
+        Instant end = Instant.now();
+
+        System.out.println("Durata query2 : " + Duration.between(start,end).toMillis());
+
 
         System.out.println(" \n\n------ RESULT Q2 ------- ");
         for (Tuple2<String, Tuple2<Tuple2<Iterable<Tuple2<Long, Double>>, Tuple2<Double, Double>>, Iterable<Tuple2<Integer, Double>>>> s : resultQ2.take(10)){
@@ -66,7 +73,7 @@ public class Query2 {
 
 
     public static JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> CalculateDistribution(JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> rdd) {
-        System.out.println(" --------------- CalculateDistribution ----------------");
+        //System.out.println(" --------------- CalculateDistribution ----------------");
 
         // (hour,(PULocationID,1))
         JavaPairRDD<String, Tuple2<Long, Integer>> rddLocation = rdd.mapToPair(

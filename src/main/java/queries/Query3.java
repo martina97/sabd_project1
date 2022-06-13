@@ -12,6 +12,8 @@ import utils.QueriesPreprocessing;
 import utils.Tuple2Comparator;
 import utils.convertProva;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -22,8 +24,14 @@ public class Query3 {
 
         // (tpep_pickup_datetime, passenger_count, DOLocationID, fare_amount)
         JavaRDD<Tuple4<LocalDateTime, Double, Long, Double>> rddPreproc = QueriesPreprocessing.Query3Preprocessing(rdd);
+        Instant start = Instant.now();
 
         JavaPairRDD<String, ArrayList<Tuple4>> result = mostPopularZones(rddPreproc);
+
+        Instant end = Instant.now();
+
+        System.out.println("Durata query3 : " + Duration.between(start,end).toMillis());
+
     }
 
 
@@ -57,7 +65,7 @@ public class Query3 {
                     return new Tuple2<>(key, value);
                 });
 
-        System.out.println(" ----------------------- NUM MEDIO PASSEGGERI ---------------------- ");
+       // System.out.println(" ----------------------- NUM MEDIO PASSEGGERI ---------------------- ");
         JavaPairRDD<Tuple2<String, Long>, Double> rddPassenger = rddPreproc.mapToPair(
                 word -> {
                     String date = convertProva.covertDateToDayStr(word._1());
@@ -95,10 +103,13 @@ public class Query3 {
                 }).sortByKey();
 
 
+        /*
         System.out.println(" ---- finale ------ ");
         for (Tuple2<String, ArrayList<Tuple4>> s : finale.take(10)) {
             System.out.println(s);
         }
+
+         */
         return finale;
     }
 }

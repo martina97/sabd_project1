@@ -48,7 +48,7 @@ public class SqlQuery1 {
 
         Dataset<Row> result = spark.sql(
                 "SELECT tpep_pickup_datetime, AVG(tip_amount/(total_amount-tolls_amount)) AS tip_percentage, count(*) as trips_number FROM query1  " +
-                        "GROUP BY tpep_pickup_datetime");
+                        "GROUP BY tpep_pickup_datetime ORDER BY tpep_pickup_datetime");
         result.createOrReplaceTempView("temp");
         // il risultato di questa query lo chiamo "temp", e da questo momento posso
         // utilizzarlo in un'altra funzione

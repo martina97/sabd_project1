@@ -44,7 +44,7 @@ public class Query3 {
         JavaPairRDD<Tuple2<String, Long>, StatCounter> rddFareAmount = rddPreproc
                 .mapToPair(
                         word -> {
-                            String date = convertProva.covertDateToDayStr(word._1());
+                            String date = covertDateToDayStr(word._1());
                             Tuple2<String, Long> key = new Tuple2<>(date, word._3());
                             Double value = (word._4());
                             return new Tuple2<>(key, value);
@@ -67,7 +67,7 @@ public class Query3 {
         // key: (giorno, DOLocationID), value: passenger_count
         JavaPairRDD<Tuple2<String, Long>, Double> rddPassenger = rddPreproc.mapToPair(
                 word -> {
-                    String date = convertProva.covertDateToDayStr(word._1());
+                    String date = covertDateToDayStr(word._1());
                     Tuple2<String, Long> key = new Tuple2<>(date, word._3());   //chiave: (giorno, DOLocationID)
                     Double value = (word._2()); // valore: passenger_count
                     return new Tuple2<>(key, value);
@@ -111,4 +111,20 @@ public class Query3 {
          */
         return finale;
     }
+     public static String covertDateToDayStr(LocalDateTime localDateTime) {
+        int day = localDateTime.getDayOfMonth();
+        String dayStr = String.valueOf(day);
+        if (day < 10) {
+            dayStr = "0"+day;
+        }
+
+        int month =  localDateTime.getMonthValue();
+        String monthStr = String.valueOf(month);
+
+        if (month < 10) {
+            monthStr = "0"+month;
+        }
+        return localDateTime.getYear() + "-" + monthStr + "-" + dayStr;
+    }
+
 }

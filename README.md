@@ -14,4 +14,5 @@ Disponibili ai seguenti link:
 
 ## Deployment
 I nodi worker per Spark e HDFS possono essere scalati utilizzando docker-compose, in particolare modificando il file start_docker.sh contenuto nelladirectory docker:
+    
     sudo docker-compose up --scale spark-worker=3 --scale hdfs-datanode=5 -d

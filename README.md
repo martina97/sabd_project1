@@ -22,3 +22,8 @@ I nodi worker per Spark e HDFS possono essere scalati utilizzando docker-compose
 Per lanciare l'applicazione:
 1. Creare la jar del progetto tramite il comando "mvn package"
 2. Posizionarsi all'interno della cartella "docker" ed eseguire lo script "run_queries.sh"
+
+## Web UI
+- http://localhost:9870     hdfs namenode
+- http://localhost:8080     spark master
+- http://localhost:4040     spark ui

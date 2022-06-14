@@ -13,6 +13,12 @@ Disponibili ai seguenti link:
 - https://nyc-tlc.s3.amazonaws.com/trip+data/yellow_tripdata_2022-02.parquet
 
 ## Deployment
-I nodi worker per Spark e HDFS possono essere scalati utilizzando docker-compose, in particolare modificando il file start_docker.sh contenuto nelladirectory docker:
+I nodi worker per Spark e HDFS possono essere scalati utilizzando docker-compose, in particolare modificando il file "start_docker.sh" contenuto nelladirectory "docker":
     
     sudo docker-compose up --scale spark-worker=3 --scale hdfs-datanode=5 -d
+
+## Start queries
+
+Per lanciare l'applicazione:
+1. Creare la jar del progetto tramite il comando "mvn package"
+2. Posizionarsi all'interno della cartella "docker" ed eseguire lo script "run_queries.sh"

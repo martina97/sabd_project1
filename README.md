@@ -5,6 +5,8 @@ Per gli scopi di questo progetto si utilizzano i seguenti file, forniti in forma
 - yellow tripdata 2021-12.parquet,
 - yellow tripdata 2022-01.parquet,
 - yellow tripdata 2022-02.parquet,
+
+
 Disponibili ai seguenti link:
 - https://nyc-tlc.s3.amazonaws.com/trip+data/yellow_tripdata_2021-12.parquet
 - https://nyc-tlc.s3.amazonaws.com/trip+data/yellow_tripdata_2022-01.parquet

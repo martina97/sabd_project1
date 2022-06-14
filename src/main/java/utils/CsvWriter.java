@@ -148,6 +148,18 @@ public class CsvWriter {
             sb.append('\n');
 
 
+            FileWriter csvWriter = new FileWriter("/docker/node_volume/resultsQuery1.csv");
+
+            csvWriter.append("YYYY-MM");
+            csvWriter.append(",");
+
+            csvWriter.append("tip_percentage");
+            csvWriter.append(",");
+
+            csvWriter.append("trips_number");
+            csvWriter.append('\n');
+
+
             for (Tuple2<String, Tuple2<Double, Long>> tuple : resultsRDD.collect()) {
                 sb.append(tuple._1);
                 sb.append(",");
@@ -156,43 +168,26 @@ public class CsvWriter {
                 sb.append(tuple._2()._2);
                 sb.append("\n");
 
+                csvWriter.append(String.valueOf(tuple._1));
+                csvWriter.append(",");
+                csvWriter.append(String.valueOf(tuple._2()._1));
+                csvWriter.append(",");
+                csvWriter.append(String.valueOf(tuple._2()._2));
+                csvWriter.append("\n");
+
             }
 
+            csvWriter.flush();
+            csvWriter.close();
             bufferedWriter.write(sb.toString());
             bufferedWriter.close();
           } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
-    public static void writeQuery1ResultsCSV(JavaPairRDD<String, Tuple2<Double, Long>> resultsRDD) {
-        try {
-            // scrittura su csv locale
-            FileWriter csvWriter = new FileWriter(pathQuery1Results);
-
-            csvWriter.append("YYYY-MM");
-            csvWriter.append(",");
-            csvWriter.append("tip_percentage");
-            csvWriter.append(",");
-            csvWriter.append("trips_number");
-            csvWriter.append("\n");
-
-            for (Tuple2<String, Tuple2<Double, Long>> tuple : resultsRDD.collect()) {
-
-
-                csvWriter.append(tuple._1());
-                csvWriter.append(",");
-                csvWriter.append(Double.toString(tuple._2()._1));
-                csvWriter.append(",");
-                csvWriter.append(Double.toString(tuple._2()._2));
-                csvWriter.append("\n");
-            }
-            csvWriter.flush();
-            csvWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+  
 
     public static void writeQuery1SQL(Dataset<Row> result) {
         try {

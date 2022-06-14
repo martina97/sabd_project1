@@ -57,13 +57,7 @@ public class Query2 {
 
         System.out.println("Durata query2 : " + Duration.between(start,end).toMillis());
 
-
-        System.out.println(" \n\n------ RESULT Q2 ------- ");
-        for (Tuple2<String, Tuple2<Tuple2<Iterable<Tuple2<Long, Double>>, Tuple2<Double, Double>>, Iterable<Tuple2<Integer, Double>>>> s : resultQ2.take(10)){
-            System.out.println(s);
-        }
-
-      CsvWriter.writeQuery2(resultQ2);
+        CsvWriter.writeQuery2(resultQ2);
 
 
 
@@ -73,7 +67,6 @@ public class Query2 {
 
 
     public static JavaPairRDD<String, Iterable<Tuple2<Long, Double>>> CalculateDistribution(JavaRDD<Tuple4<LocalDateTime, Long, Double, Double>> rdd) {
-        //System.out.println(" --------------- CalculateDistribution ----------------");
 
         // (hour,(PULocationID,1))
         JavaPairRDD<String, Tuple2<Long, Integer>> rddLocation = rdd.mapToPair(

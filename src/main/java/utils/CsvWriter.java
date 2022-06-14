@@ -13,7 +13,10 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
+import scala.Tuple4;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -25,6 +28,7 @@ public class CsvWriter {
     public static String pathQuery1Results = "results/resultsQuery1.csv";
     public static String pathQuery2Results = "results/resultsQuery2.csv";
     public static String pathQuery1SQLResults = "results/resultsQuery1SQL.csv";
+    public static String pathQuery3Results = "results/resultsQuery3.csv";
 
 
    public static void writeQuery2(JavaPairRDD<String, Tuple2<Tuple2<Iterable<Tuple2<Long, Double>>, Tuple2<Double, Double>>, Iterable<Tuple2<Integer, Double>>>> resultQ2 ) {
@@ -227,7 +231,7 @@ public class CsvWriter {
 
 
             for (Row row : result.collectAsList()) {
-	   	sb.append(row.getString(0));
+	   	        sb.append(row.getString(0));
                 sb.append(",");
                 sb.append(row.getDouble(1));
                 sb.append(",");
@@ -251,4 +255,94 @@ public class CsvWriter {
         }
 
     }
+
+    public static void writeQuery3(JavaPairRDD<String, ArrayList<Tuple4<Long, Double, Double, Double>>> result) {
+            try {
+                // scrittura su hdfs
+                Configuration configuration = new Configuration();
+                configuration.set("fs.defaultFS","hdfs://hdfs-namenode:9000");
+                FileSystem hdfs;
+                hdfs = FileSystem.get(configuration);
+                Path outputPathHDFS = new Path("hdfs://hdfs-namenode:9000/"+ pathQuery3Results);
+                FSDataOutputStream fsDataOutputStream;
+                fsDataOutputStream = hdfs.create(outputPathHDFS,true);
+                BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fsDataOutputStream, StandardCharsets.UTF_8));
+                StringBuilder sb = new StringBuilder();
+
+
+                FileWriter csvWriter = new FileWriter("/docker/node_volume/resultsQuery3.csv");
+
+                csvWriter.append("YYYY-MM-DD");
+                csvWriter.append(",");
+                sb.append("YYYY-MM-DD");
+                sb.append(",");
+
+                HashMap<Long,String> map = ZoneMap.createZoneMap();
+                for (int i = 0; i<6; i++) {
+                    csvWriter.append("DO" + i);
+                    csvWriter.append(",");
+                    csvWriter.append("avg_pax_DO" + i);
+                    csvWriter.append(",");
+                    csvWriter.append("avg_fare_DO" + i);
+                    csvWriter.append(",");
+                    csvWriter.append("stddev_fare_DO" + i);
+
+                    sb.append("DO" + i);
+                    sb.append(",");
+                    sb.append("avg_pax_DO" + i);
+                    sb.append(",");
+                    sb.append("avg_fare_DO" + i);
+                    sb.append(",");
+                    sb.append("stddev_fare_DO" + i);
+                    if (i != 5) {
+                        csvWriter.append(',');
+                        sb.append(',');
+                    } else {
+                        csvWriter.append('\n');
+                        sb.append('\n');
+                    }
+                }
+                for( Tuple2<String, ArrayList<Tuple4<Long, Double, Double, Double>>> s : result.collect()) {
+                    System.out.println(s);
+                    csvWriter.append(s._1);
+                    csvWriter.append(',');
+                    sb.append(s._1);
+                    sb.append(',');
+                    ArrayList<Tuple4<Long, Double, Double, Double>> list = s._2;
+                    for (int j = 0; j < 5; j++) {
+                        Long location = list.get(j)._1();
+                        csvWriter.append(String.valueOf(map.get(location)));
+                        csvWriter.append(",");
+                        csvWriter.append(String.valueOf(list.get(j)._4()));
+                        csvWriter.append(",");
+                        csvWriter.append(String.valueOf(list.get(j)._3()));
+                        csvWriter.append(",");
+                        csvWriter.append(String.valueOf(list.get(j)._2()));
+
+                        sb.append(String.valueOf(map.get(location)));
+                        sb.append(",");
+                        sb.append(String.valueOf(list.get(j)._4()));
+                        sb.append(",");
+                        sb.append(String.valueOf(list.get(j)._3()));
+                        sb.append(",");
+                        sb.append(String.valueOf(list.get(j)._2()));
+                        if (j != 4) {
+                            csvWriter.append(",");
+                            sb.append(",");
+                        } else {
+                            csvWriter.append("\n");
+                            sb.append("\n");
+                        }
+                    }
+                }
+
+                bufferedWriter.write(sb.toString());
+                bufferedWriter.close();
+                csvWriter.flush();
+                csvWriter.close();
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
 }

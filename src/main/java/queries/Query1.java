@@ -31,44 +31,11 @@ public class Query1 {
             System.out.println(s);
         }
 
-        //CsvWriter.writeQuery1ResultsCSV(resultRDD);
         CsvWriter.writeQuery1HDFS_CSV(resultRDD);
 
         }
 
-        //  VECCHIO PRIMA DI TRACCIA UFFICIALE
-    // PIU EFFICIENTE, CI METTE MENO
-    // todo: vedere differenza di tempo tra questo metodo e l'altro
-    /*
-    private static JavaPairRDD<String, Double> computeResults(JavaRDD<Tuple4<LocalDateTime,Double, Double, Double>> rdd) {
-        // voglio pair RDD con key = 2021-12, value = tip/(total amount - toll amount)
-
-        JavaPairRDD<String, Double> rddAvgTip = rdd.mapToPair(
-                word -> {
-                    LocalDateTime odt = word._1();
-                    String key = odt.getYear() + "-" + odt.getMonthValue();
-                    Double value = word._2() / (word._4()- word._3());
-                    //Tuple2<Double,Integer> value = new Tuple2<>(word._3(),1);
-
-                    return new Tuple2<>(key, value);
-                });
-        JavaPairRDD<String, Double> output = rddAvgTip
-                .filter(x-> !(Double.isNaN(x._2()))) //rimuovo NaN generati da tip/(total amount - toll amount) (infatti 0.0/0.0 = NaN)
-                .aggregateByKey(
-                        new StatCounter(),
-                        StatCounter::merge,
-                        StatCounter::merge)
-                .mapToPair(x -> new Tuple2<>(x._1(),  x._2().mean()))
-                .sortByKey();
-
-        return output;
-    }
-
-     */
-
-
-    // PIU EFFICIENTE, CI METTE MENO
-    // todo: vedere differenza di tempo tra questo metodo e l'altro
+      
     private static JavaPairRDD<String, Tuple2<Double, Long>> computeResults(JavaRDD<Tuple5<LocalDateTime, Double, Double, Double, Double>> rdd) {
 
         // (month, tip_amount/(total_amount - tolls_amount)
@@ -79,30 +46,6 @@ public class Query1 {
                     Double value = word._3() / (word._5()- word._4());
                     return new Tuple2<>(key, value);
                 });
-
-        /*
-        rddAvgTip --> (key, value) = (mese, tip/tot-toll)
-        facendo aggregateByKey prendo tutti i valori per quella chiave e ci applico diverse statistiche
-         */
-
-
-        /*
-        JavaPairRDD<String, StatCounter> provaStatCount = rddAvgTip
-                .filter(x-> !(Double.isNaN(x._2()))) //rimuovo NaN generati da tip/(total amount - toll amount) (infatti 0.0/0.0 = NaN)
-                .aggregateByKey(
-                        new StatCounter(),
-                        StatCounter::merge,
-                        StatCounter::merge);
-
-        provaStatCount ==========  (2021-12,(count: 11, mean: 0,159004, stdev: 0,044313, max: 0,228669, min: 0,067568))
-        quindi quando poi faccio .mapToPair(x -> new Tuple2<>(x._1(),  x._2().mean())), x._1() è la chiave , quindi la data,
-        mentre x._2() sono (count: 11, mean: 0,159004, stdev: 0,044313, max: 0,228669, min: 0,067568)
-
-         System.out.println("\n\n ----- StatCounter ------  ");
-        for (Tuple2<String, StatCounter> s : provaStatCount.collect()) {
-            System.out.println(s);
-        }
-        */
 
 
         // (month, (mean, occurrences))

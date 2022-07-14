@@ -1,4 +1,4 @@
-# Sistemi e Architetture per Big Data - AA 2021/2011
+# Sistemi e Architetture per Big Data - AA 2021/2022
 
 Lo scopo del progetto è rispondere a 3 query riguardanti il dataset dei dati della città di New York (NYC), utilizzando il framework di data processing Apache Spark.
 Per gli scopi di questo progetto si utilizzano i seguenti file, forniti in formato Parquet, relativi, rispettivamente, ai viaggi dei taxi di colore giallo ed ai mesi di dicembre 2021, gennaio 2022 e febbraio 2022:
